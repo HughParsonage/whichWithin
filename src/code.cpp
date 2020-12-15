@@ -1,0 +1,42 @@
+#include <Rcpp.h>
+using namespace Rcpp;
+
+double sinhalfsq (double x) {
+  const double o = sin(x / 2);
+  return o * o;
+}
+
+// [[Rcpp::export(rng = false)]]
+double haversine_dist(double olat1, double olon1, double olat2, double olon2) {
+  const double lat1 = olat1 * (M_PI / 180) ;
+  const double lat2 = olat2 * (M_PI / 180) ;
+  const double lon1 = olon1 * (M_PI / 180) ;
+  const double lon2 = olon2 * (M_PI / 180) ;
+  
+  
+  // const double delta_lat = (lat1 > lat2) ? (lat1 - lat2) : (lat2 - lat1) ;
+  const double delta_lat = std::fabs(lat1 - lat2);
+  // const double delta_lon = (lon1 > lon2) ? (lon1 - lon2) : (lon2 - lon1) ;
+  const double delta_lon = std::fabs(lon1 - lon2);
+  
+  // 6371 * 2 * asin(sqrt(sin(d_lat / 2)^2 + cos(lat1) * cos(lat2) * sin(d_lon / 2)^2))
+  double out = 0;
+  double den = cos(lat1) * cos(lat2) * sinhalfsq(delta_lon);
+  out = sinhalfsq(delta_lat);
+  out += den;
+  out = sqrt(out);
+  out = asin(out);
+  out *= 6371;
+  out *= 2;
+  return out;
+}
+
+double euclid_dist_sq(double x1, double y1, double x2, double y2) {
+  double dx = x2 - x1;
+  double dy = y2 - y1;
+  return (dx * dx) + (dy * dy);
+}
+
+double euclid_dist(double x1, double y1, double x2, double y2) {
+  return sqrt(euclid_dist_sq(x1, y1, x2, y2));
+}
