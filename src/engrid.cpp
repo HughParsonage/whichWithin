@@ -3,17 +3,14 @@
 // [[Rcpp::export]]
 IntegerVector engrid(DoubleVector x, DoubleVector y, double r, 
                      double xmin = 1, double xmax = -1,
-                     double ymin = 1, double ymax = -1,
-                     int nThread = 1) {
+                     double ymin = 1, double ymax = -1) {
   R_xlen_t N = x.length();
   if (N != y.length()) {
     stop("Lengths differ.");
   }
   
   double rxy[4] = {xmin, xmax, ymin, ymax};
-  aminmax_dbl(rxy, x, y, nThread);
-  
-
+  aminmax_dbl(rxy, x, y);
   
   double rx = rxy[1] - rxy[0];
   double ry = rxy[3] - rxy[2];
@@ -21,8 +18,6 @@ IntegerVector engrid(DoubleVector x, DoubleVector y, double r,
   double rn = r / ((rx < ry) ? ry : rx);
   int b = std::ceil(1 / rn);
   rn = std::nextafter(rn, INFINITY);
-  
-  
   
   IntegerVector out = no_init(N);
   
@@ -36,4 +31,17 @@ IntegerVector engrid(DoubleVector x, DoubleVector y, double r,
   }
   return out;
 }
+
+// [[Rcpp::export(rng = false)]]
+IntegerVector high_prec_int(DoubleVector x) {
+  R_xlen_t N = x.length();
+  IntegerVector out = no_init(N);
+  for (R_xlen_t i = 0; i < N; ++i) {
+    out[i] = static_cast<int>(10000 * x[i]);
+  }
+  return out;
+}
+
+
+
 

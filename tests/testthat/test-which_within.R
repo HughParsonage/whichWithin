@@ -9,8 +9,8 @@ test_that("which_within works", {
         base_lat <- -36 + 2 * seq(0, 1, length.out = 37)^2
         base_lon <- 145 + seq(0, 1, length.out = 37)^2
       } else {
-        base_lat <- seq(-34, -36, length.out = 37)
-        base_lon <- seq(-34, 145, length.out = 37)
+        base_lat <- seq(-36, -34, length.out = 37)
+        base_lon <- seq(145, 146, length.out = 37)
       }
       DT <- CJ(lat = base_lat,
                lon = base_lon)
@@ -18,9 +18,21 @@ test_that("which_within works", {
       expected <- which_within_cj(DT$lat, DT$lon, radius = radius)
       
       ans <- which_within(DT$lat, DT$lon, radius = radius)
-      expect_identical(ans, expected, 
-                       info = paste("quadratic", quadratic, " ",
-                                    "radius", radius))
+      ans_upr <- which_within(DT$lat, DT$lon, radius = radius * 1.005)
+      ans_lwr <- which_within(DT$lat, DT$lon, radius = radius * 0.995)
+      
+      if (!identical(ans, expected)) {
+        expect_true(nrow(ans_upr) >= nrow(expected),
+                   info = paste("quadratic", quadratic, " ",
+                                "radius", radius, "(>=)"))
+        expect_true(nrow(ans_lwr) <= nrow(expected),
+                   info = paste("quadratic", quadratic, " ",
+                                "radius", radius, "(<=)"))
+      } else {
+        expect_identical(ans, expected, 
+                         info = paste("quadratic", quadratic, " ",
+                                      "radius", radius))
+      }
     }
   }
   

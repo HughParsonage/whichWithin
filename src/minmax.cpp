@@ -11,7 +11,7 @@ void vmax(double & xmax, double xi) {
   }
 }
 
-void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y, int nThread) {
+void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y) {
   double xmin = ans[0];
   double xmax = ans[1];
   double ymin = ans[2];
@@ -26,7 +26,6 @@ void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y, int nThread) {
   ymax = y[0];
   R_xlen_t N = x.length();
   
-#pragma omp parallel for num_threads(nThread) reduction(min : xmin,ymin) reduction(max : xmax,ymax)
   for (R_xlen_t i = 0; i < N; ++i) {
     double xi = x[i], yi = y[i];
     vmin(xmin, xi);
@@ -40,14 +39,30 @@ void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y, int nThread) {
   ans[3] = ymax;
 }
 
+void aminmax1(double ans[2], DoubleVector x, R_xlen_t N) {
+  double xmin = x[0];
+  double xmax = x[0];
+  for (R_xlen_t i = 1; i < N; ++i) {
+    double xi = x[i];
+    vmin(xmin, xi);
+    vmax(xmax, xi);
+  }
+  ans[0] = xmin;
+  ans[1] = xmax;
+}
+
 // [[Rcpp::export(rng = false)]]
-DoubleVector do_minmax(DoubleVector x, DoubleVector y, int nThread = 1) {
+DoubleVector do_minmax(DoubleVector x, DoubleVector y) {
   double ans[4] = {1, -1, 1, -1};
-  aminmax_dbl(ans, x, y, nThread);
+  aminmax_dbl(ans, x, y);
   DoubleVector out = no_init(4);
   for (int i = 0; i < 4; ++i) {
     out[i] = ans[i];
   }
   return out;
 }
+
+
+
+
 

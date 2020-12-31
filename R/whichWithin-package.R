@@ -2,6 +2,11 @@
 #' 
 #' @import data.table
 #' @importFrom hutils haversine_distance
+#' @importFrom Rcpp evalCpp
+#' @importFrom magrittr and
+#' @importFrom magrittr or
+#' @importFrom stats median
+#' @importFrom stats setNames
 
 #' @keywords internal
 "_PACKAGE"

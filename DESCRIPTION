@@ -1,6 +1,6 @@
 Package: whichWithin
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Identify Collections of Points Within a Certain Radius
+Version: 0.1.0
 Authors@R: 
     person(given = "Hugh",
            family = "Parsonage",
@@ -14,10 +14,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
     geosphere,
-    testthat
+    testthat,
+    datasets
 LinkingTo: 
     Rcpp
 Imports: 
     Rcpp,
     data.table,
-    hutils
+    hutils,
+    magrittr

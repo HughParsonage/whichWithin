@@ -5,6 +5,49 @@
 
 using namespace Rcpp;
 
+// Z4
+List Z4(DoubleVector x, DoubleVector y);
+RcppExport SEXP _whichWithin_Z4(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(Z4(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Z4P
+List Z4P(DoubleVector x, DoubleVector y, int nThread);
+RcppExport SEXP _whichWithin_Z4P(SEXP xSEXP, SEXP ySEXP, SEXP nThreadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
+    rcpp_result_gen = Rcpp::wrap(Z4P(x, y, nThread));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Char2Int
+IntegerVector Char2Int(CharacterVector x);
+RcppExport SEXP _whichWithin_Char2Int(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(Char2Int(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// EncodeP
+IntegerVector EncodeP(CharacterVector x);
+RcppExport SEXP _whichWithin_EncodeP(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(EncodeP(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // haversine_dist
 double haversine_dist(double olat1, double olon1, double olat2, double olon2);
 RcppExport SEXP _whichWithin_haversine_dist(SEXP olat1SEXP, SEXP olon1SEXP, SEXP olat2SEXP, SEXP olon2SEXP) {
@@ -18,22 +61,148 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// do_which_within
-List do_which_within(DoubleVector lat, DoubleVector lon, double r);
-RcppExport SEXP _whichWithin_do_which_within(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP) {
+// haversine_dist_uys
+double haversine_dist_uys(double olat1, double olon1, double olat2, double olon2);
+RcppExport SEXP _whichWithin_haversine_dist_uys(SEXP olat1SEXP, SEXP olon1SEXP, SEXP olat2SEXP, SEXP olon2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type olat1(olat1SEXP);
+    Rcpp::traits::input_parameter< double >::type olon1(olon1SEXP);
+    Rcpp::traits::input_parameter< double >::type olat2(olat2SEXP);
+    Rcpp::traits::input_parameter< double >::type olon2(olon2SEXP);
+    rcpp_result_gen = Rcpp::wrap(haversine_dist_uys(olat1, olon1, olat2, olon2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// haversine_dist_klatlon
+double haversine_dist_klatlon(double lat1, double lon1, double lat2, double lon2, double coslat1);
+RcppExport SEXP _whichWithin_haversine_dist_klatlon(SEXP lat1SEXP, SEXP lon1SEXP, SEXP lat2SEXP, SEXP lon2SEXP, SEXP coslat1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type lat1(lat1SEXP);
+    Rcpp::traits::input_parameter< double >::type lon1(lon1SEXP);
+    Rcpp::traits::input_parameter< double >::type lat2(lat2SEXP);
+    Rcpp::traits::input_parameter< double >::type lon2(lon2SEXP);
+    Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
+    rcpp_result_gen = Rcpp::wrap(haversine_dist_klatlon(lat1, lon1, lat2, lon2, coslat1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// delta_lon_given_R
+double delta_lon_given_R(double coslat1, double sqrtR);
+RcppExport SEXP _whichWithin_delta_lon_given_R(SEXP coslat1SEXP, SEXP sqrtRSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
+    Rcpp::traits::input_parameter< double >::type sqrtR(sqrtRSEXP);
+    rcpp_result_gen = Rcpp::wrap(delta_lon_given_R(coslat1, sqrtR));
+    return rcpp_result_gen;
+END_RCPP
+}
+// delta_olon_given_R
+double delta_olon_given_R(double coslat1, double sqrtR);
+RcppExport SEXP _whichWithin_delta_olon_given_R(SEXP coslat1SEXP, SEXP sqrtRSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
+    Rcpp::traits::input_parameter< double >::type sqrtR(sqrtRSEXP);
+    rcpp_result_gen = Rcpp::wrap(delta_olon_given_R(coslat1, sqrtR));
+    return rcpp_result_gen;
+END_RCPP
+}
+// haversine_distance_par
+DoubleVector haversine_distance_par(DoubleVector lat1, DoubleVector lon1, DoubleVector lat2, DoubleVector lon2, int nThread);
+RcppExport SEXP _whichWithin_haversine_distance_par(SEXP lat1SEXP, SEXP lon1SEXP, SEXP lat2SEXP, SEXP lon2SEXP, SEXP nThreadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat1(lat1SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon1(lon1SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lat2(lat2SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon2(lon2SEXP);
+    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
+    rcpp_result_gen = Rcpp::wrap(haversine_distance_par(lat1, lon1, lat2, lon2, nThread));
+    return rcpp_result_gen;
+END_RCPP
+}
+// engrid_1D
+int engrid_1D(double x, double r, double xmin, double Rx);
+RcppExport SEXP _whichWithin_engrid_1D(SEXP xSEXP, SEXP rSEXP, SEXP xminSEXP, SEXP RxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type xmin(xminSEXP);
+    Rcpp::traits::input_parameter< double >::type Rx(RxSEXP);
+    rcpp_result_gen = Rcpp::wrap(engrid_1D(x, r, xmin, Rx));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_which_within
+List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0);
+RcppExport SEXP _whichWithin_do_which_within(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
     Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
     Rcpp::traits::input_parameter< double >::type r(rSEXP);
-    rcpp_result_gen = Rcpp::wrap(do_which_within(lat, lon, r));
+    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
+    rcpp_result_gen = Rcpp::wrap(do_which_within(lat, lon, r, lambda0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_is_within2
+LogicalVector do_is_within2(DoubleVector lat, DoubleVector lon, double r, double lambda0);
+RcppExport SEXP _whichWithin_do_is_within2(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< double >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
+    rcpp_result_gen = Rcpp::wrap(do_is_within2(lat, lon, r, lambda0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_which_within_within_1km
+List do_which_within_within_1km(DoubleVector lat, DoubleVector lon);
+RcppExport SEXP _whichWithin_do_which_within_within_1km(SEXP latSEXP, SEXP lonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_which_within_within_1km(lat, lon));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_is_within
+LogicalVector do_is_within(DoubleVector lat, DoubleVector lon, double r, bool debug);
+RcppExport SEXP _whichWithin_do_is_within(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< double >::type r(rSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_is_within(lat, lon, r, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
+// is_within_pixels
+LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, double lambda0);
+RcppExport SEXP _whichWithin_is_within_pixels(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< double >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
+    rcpp_result_gen = Rcpp::wrap(is_within_pixels(lat, lon, r, lambda0));
     return rcpp_result_gen;
 END_RCPP
 }
 // engrid
-IntegerVector engrid(DoubleVector x, DoubleVector y, double r, double xmin, double xmax, double ymin, double ymax, int nThread);
-RcppExport SEXP _whichWithin_engrid(SEXP xSEXP, SEXP ySEXP, SEXP rSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP yminSEXP, SEXP ymaxSEXP, SEXP nThreadSEXP) {
+IntegerVector engrid(DoubleVector x, DoubleVector y, double r, double xmin, double xmax, double ymin, double ymax);
+RcppExport SEXP _whichWithin_engrid(SEXP xSEXP, SEXP ySEXP, SEXP rSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP yminSEXP, SEXP ymaxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -44,29 +213,127 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type xmax(xmaxSEXP);
     Rcpp::traits::input_parameter< double >::type ymin(yminSEXP);
     Rcpp::traits::input_parameter< double >::type ymax(ymaxSEXP);
-    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
-    rcpp_result_gen = Rcpp::wrap(engrid(x, y, r, xmin, xmax, ymin, ymax, nThread));
+    rcpp_result_gen = Rcpp::wrap(engrid(x, y, r, xmin, xmax, ymin, ymax));
     return rcpp_result_gen;
 END_RCPP
 }
-// do_minmax
-DoubleVector do_minmax(DoubleVector x, DoubleVector y, int nThread);
-RcppExport SEXP _whichWithin_do_minmax(SEXP xSEXP, SEXP ySEXP, SEXP nThreadSEXP) {
+// high_prec_int
+IntegerVector high_prec_int(DoubleVector x);
+RcppExport SEXP _whichWithin_high_prec_int(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(high_prec_int(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// interleave_sorted
+IntegerVector interleave_sorted(IntegerVector x, IntegerVector y);
+RcppExport SEXP _whichWithin_interleave_sorted(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(interleave_sorted(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// unique_sorted
+IntegerVector unique_sorted(IntegerVector x);
+RcppExport SEXP _whichWithin_unique_sorted(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(unique_sorted(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// unique_sorted_inplace
+IntegerVector unique_sorted_inplace(IntegerVector x);
+RcppExport SEXP _whichWithin_unique_sorted_inplace(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(unique_sorted_inplace(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// is_sorted2
+LogicalVector is_sorted2(DoubleVector x, DoubleVector y, LogicalVector s2);
+RcppExport SEXP _whichWithin_is_sorted2(SEXP xSEXP, SEXP ySEXP, SEXP s2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< DoubleVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
-    rcpp_result_gen = Rcpp::wrap(do_minmax(x, y, nThread));
+    Rcpp::traits::input_parameter< LogicalVector >::type s2(s2SEXP);
+    rcpp_result_gen = Rcpp::wrap(is_sorted2(x, y, s2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_minmax
+DoubleVector do_minmax(DoubleVector x, DoubleVector y);
+RcppExport SEXP _whichWithin_do_minmax(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(do_minmax(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Sinusoidal
+List Sinusoidal(DoubleVector lat, DoubleVector lon, double lambda0);
+RcppExport SEXP _whichWithin_Sinusoidal(SEXP latSEXP, SEXP lonSEXP, SEXP lambda0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
+    rcpp_result_gen = Rcpp::wrap(Sinusoidal(lat, lon, lambda0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dist_sinusoidal
+DoubleVector dist_sinusoidal(DoubleVector lat1, DoubleVector lon1, DoubleVector lat2, DoubleVector lon2, double lambda0);
+RcppExport SEXP _whichWithin_dist_sinusoidal(SEXP lat1SEXP, SEXP lon1SEXP, SEXP lat2SEXP, SEXP lon2SEXP, SEXP lambda0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type lat1(lat1SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon1(lon1SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lat2(lat2SEXP);
+    Rcpp::traits::input_parameter< DoubleVector >::type lon2(lon2SEXP);
+    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
+    rcpp_result_gen = Rcpp::wrap(dist_sinusoidal(lat1, lon1, lat2, lon2, lambda0));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_whichWithin_Z4", (DL_FUNC) &_whichWithin_Z4, 2},
+    {"_whichWithin_Z4P", (DL_FUNC) &_whichWithin_Z4P, 3},
+    {"_whichWithin_Char2Int", (DL_FUNC) &_whichWithin_Char2Int, 1},
+    {"_whichWithin_EncodeP", (DL_FUNC) &_whichWithin_EncodeP, 1},
     {"_whichWithin_haversine_dist", (DL_FUNC) &_whichWithin_haversine_dist, 4},
-    {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 3},
-    {"_whichWithin_engrid", (DL_FUNC) &_whichWithin_engrid, 8},
-    {"_whichWithin_do_minmax", (DL_FUNC) &_whichWithin_do_minmax, 3},
+    {"_whichWithin_haversine_dist_uys", (DL_FUNC) &_whichWithin_haversine_dist_uys, 4},
+    {"_whichWithin_haversine_dist_klatlon", (DL_FUNC) &_whichWithin_haversine_dist_klatlon, 5},
+    {"_whichWithin_delta_lon_given_R", (DL_FUNC) &_whichWithin_delta_lon_given_R, 2},
+    {"_whichWithin_delta_olon_given_R", (DL_FUNC) &_whichWithin_delta_olon_given_R, 2},
+    {"_whichWithin_haversine_distance_par", (DL_FUNC) &_whichWithin_haversine_distance_par, 5},
+    {"_whichWithin_engrid_1D", (DL_FUNC) &_whichWithin_engrid_1D, 4},
+    {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 4},
+    {"_whichWithin_do_is_within2", (DL_FUNC) &_whichWithin_do_is_within2, 4},
+    {"_whichWithin_do_which_within_within_1km", (DL_FUNC) &_whichWithin_do_which_within_within_1km, 2},
+    {"_whichWithin_do_is_within", (DL_FUNC) &_whichWithin_do_is_within, 4},
+    {"_whichWithin_is_within_pixels", (DL_FUNC) &_whichWithin_is_within_pixels, 4},
+    {"_whichWithin_engrid", (DL_FUNC) &_whichWithin_engrid, 7},
+    {"_whichWithin_high_prec_int", (DL_FUNC) &_whichWithin_high_prec_int, 1},
+    {"_whichWithin_interleave_sorted", (DL_FUNC) &_whichWithin_interleave_sorted, 2},
+    {"_whichWithin_unique_sorted", (DL_FUNC) &_whichWithin_unique_sorted, 1},
+    {"_whichWithin_unique_sorted_inplace", (DL_FUNC) &_whichWithin_unique_sorted_inplace, 1},
+    {"_whichWithin_is_sorted2", (DL_FUNC) &_whichWithin_is_sorted2, 3},
+    {"_whichWithin_do_minmax", (DL_FUNC) &_whichWithin_do_minmax, 2},
+    {"_whichWithin_Sinusoidal", (DL_FUNC) &_whichWithin_Sinusoidal, 3},
+    {"_whichWithin_dist_sinusoidal", (DL_FUNC) &_whichWithin_dist_sinusoidal, 5},
     {NULL, NULL, 0}
 };
 
