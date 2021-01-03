@@ -2,7 +2,6 @@ test_that("is_sorted2 works", {
   skip_if_not_installed("data.table")
   skip_if_not_installed("datasets")
   library(datasets)
-  library(data.table)
   DT <- data.table(x = mtcars$mpg, y = mtcars$disp)
   # ignores values if set
   expect_identical(is_sorted2(DT$x, DT$y, TRUE), TRUE)

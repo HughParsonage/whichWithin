@@ -50,10 +50,30 @@ IntegerVector unique_sorted_inplace(IntegerVector x) {
     p += newi;
     x[p] = x[i];
   }
+  ++p; // since p does not include the first element.
   IntegerVector out = no_init(p);
   for (R_xlen_t i = 0; i < p; ++i) {
     out[i] = x[i];
   }
   return out;
-  
 }
+
+/*
+ 
+ * This function is like setorderv(DT, "ord")[["ans"]]
+LogicalVector restore_orig_order(LogicalVector ans, IntegerVector ord, int nThread = 1) {
+  int N = ans.length();
+  if (N != ord.length()) {
+    stop("N != ord.length()"); // # nocov
+  }
+  LogicalVector out = no_init(N);
+  
+#pragma omp parallel for num_threads(nThread)
+  for (int i = 0; i < N; ++i) {
+    int oi = ord[i] - 1;
+    out[oi] = ans[i];
+  }
+  return out;
+}
+ */
+

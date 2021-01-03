@@ -58,7 +58,9 @@ which_within <- function(lat, lon,
   }
   
   out <- do_which_within(lat, lon, r = r, lambda0 = lambda0)
-  as.data.table(out)
+  setDT(out)
+  setattr(out, "sorted", c("orig", "dest"))
+  out[]
 }
 
 

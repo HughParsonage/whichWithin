@@ -1,7 +1,6 @@
 test_that("which_within works", {
   skip_if_not_installed("geosphere")
   skip_if_not_installed("data.table")
-  library(data.table)
   
   for (quadratic in c(FALSE, TRUE)) {
     for (radius in c(0.5, 1, 5, 10, 20)) {

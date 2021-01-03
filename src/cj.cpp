@@ -26,6 +26,16 @@ R_xlen_t sum_n_le2(R_xlen_t N) {
 }
 
 // [[Rcpp::export(rng = false)]]
+IntegerVector test_sum_identities(int k = 50, int j = 2, int N = 100) {
+  IntegerVector out(4);
+  out[0] = sum_first_k(k);
+  out[1] = sum_n_minus_seq(j, N);
+  out[2] = sum_n_le(N);
+  out[3] = sum_n_le2(N);
+  return out;
+}
+
+// [[Rcpp::export(rng = false)]]
 List Z4(DoubleVector x, DoubleVector y) {
   R_xlen_t n = x.length();
   R_xlen_t N = sum_n_le2(n);

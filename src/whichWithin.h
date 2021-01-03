@@ -12,6 +12,7 @@ using namespace Rcpp;
 
 void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y);
 void aminmax1(double ans[2], DoubleVector x, R_xlen_t N);
+void vmaxmin(IntegerVector x, int & xmax, int & xmin);
 void sinusoidal(R_xlen_t N, DoubleVector x, DoubleVector y, DoubleVector lat, DoubleVector lon, double lambda0);
 double euclid_dist_sq(double x1, double y1, double x2, double y2);
 double euclid_dist(double x1, double y1, double x2, double y2);

@@ -2,9 +2,19 @@
 % Please edit documentation in R/are_within.R
 \name{are_within}
 \alias{are_within}
+\alias{mutate_are_within}
 \title{Are points within a set distance?}
 \usage{
 are_within(lat, lon, radius = "1 km", lambda0 = NULL)
+
+mutate_are_within(
+  DT,
+  radius = "1 km",
+  lambda0 = NULL,
+  new_col = NULL,
+  overwrite = NA,
+  latloncols = "auto"
+)
 }
 \arguments{
 \item{lat, lon}{Coordinates of points.}
@@ -14,12 +24,31 @@ are_within(lat, lon, radius = "1 km", lambda0 = NULL)
 \item{lambda0}{Passed to the sinusoidal projection. Defaults to the
 median of \code{lon}. Use to indicate the longitude at which distortion
 should be zero (and smaller the the closer the longitude).}
+
+\item{DT}{A data.frame, \code{data.table} preferred. Ideally, already
+\code{key(DT)} are the \code{lat,lon} columns in \code{DT}, as this will
+improve performance by obviating the need to sort internally.}
+
+\item{new_col}{(\code{character(1)}) The name of the new column to set on \code{DT}.
+If \code{NULL}, the default, the column name will be \code{are_within_<radius>}.}
+
+\item{overwrite}{(\code{logical(1)}) Should \code{new_col} be overwritten
+if \code{DT} already has a column so named? Set to \code{FALSE}
+to error, \code{NA} for a warning, and \code{TRUE} to overwrite silently.}
+
+\item{latloncols}{\code{character(2)}. The columns in \code{DT}
+corresponding to latitude and longitude respectively. If \code{"auto"},
+the default, columns will be guessed.}
 }
 \value{
 Logical vector \code{x} such that,
 for every \code{(lat[i],lon[i])}, \code{x[i]} is
 \code{TRUE} iff there is some \code{j} such that
 \code{dist_geo(lat[i], lon[i], lat[j], lon[j]) < r}.
+
+For \code{mutate_are_within}, returns the data frame \code{DT}
+with a logical column \code{new_col}, whether the point is within
+\code{radius} of other points in the data frame.
 }
 \description{
 Are points within a set distance?

@@ -1,12 +1,17 @@
 #' whichWithin
 #' 
 #' @import data.table
+#' @importFrom checkmate vname
+#' @importFrom hutils %notin%
+#' @importFrom hutils AND
+#' @importFrom hutils OR
 #' @importFrom hutils haversine_distance
 #' @importFrom Rcpp evalCpp
 #' @importFrom magrittr and
 #' @importFrom magrittr or
 #' @importFrom stats median
 #' @importFrom stats setNames
+#' @importFrom utils hasName
 
 #' @keywords internal
 "_PACKAGE"

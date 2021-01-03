@@ -1,10 +1,15 @@
+test_that("test for timing", {
+  expect_true(TRUE)
+})
+
 test_that("is_within works for chains", {
   skip_if_not_installed("data.table")
-  library(data.table)
   lat <- c(0, 0, 0, 1, 1, 1)
   lon <- c(1, 2, 2.5, 2.5, 3.5, 4)
   DT_chains <- data.table(lat, lon)
-  actual <- which_within_cj(lat, lon)
+  actual <- which_within_cj(lat, lon, radius = 111, use_geosphere = FALSE)
+  answer <- which_within(lat, lon, radius = 111)
+  expect_equal(actual, answer)
   
 })
 
@@ -37,6 +42,95 @@ test_that("is_within works", {
   
   # The indices of is within should be the indices where
   # the distance is less than 1.
-  expect_identical(which(res), all_indices)
+  if (identical(which(res), all_indices)) {
+    expect_identical(which(res), all_indices)
+  } else {
+    # Maximum distance should be 10 m
+    wres <- which(res)
+    wres <- wres[wres %notin% all_indices]
+    
+    
+    mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+    expect_gt(mind, 0.99)
+  }
+  
+  
+  res_are_within <- are_within(melb_latlons10k$LATITUDE, 
+                               melb_latlons10k$LONGITUDE,
+                               r = "1 km")
+  if (identical(which(res_are_within), all_indices)) {
+    expect_identical(which(res_are_within), all_indices)
+  } else {
+    # Maximum distance should be 10 m
+    wres <- which(res_are_within)
+    wres <- wres[wres %notin% all_indices]
+    
+    if (length(wres)) {
+      mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+    } else {
+      # avoid the warning -- still correct
+      mind <- Inf
+    }
+    expect_gt(mind, 0.99)
+    
+    wres <- which(res_are_within)
+    wres <- all_indices[all_indices %notin% wres]
+    
+    if (length(wres)) {
+      mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+    } else {
+      # avoid the warning -- still correct
+      mind <- Inf
+    }
+    expect_gt(mind, 0.99)
+  }
   
 })
+
+
+test_that("is_within_pixels coverage", {
+  # Want to test coinciding counts
+  lat <- rep(seq(-36, -35.6, length.out = 101), each = 3)
+  lon <- rep(seq(140, 140.1, length.out = 101), each = 3)
+  expect_true(all(is_within_pixels(lat, lon, 2, 140)))
+  
+  
+})
+
+
+test_that("are_within error handling", {
+  expect_error(are_within(0, 1:2), regexp = "length")
+  if (is_64bit()) {
+    expect_error(are_within(double(3e9), double(3e9)), 
+                 regexp = "long")
+  }
+  expect_error(are_within(c(-35, -36), c(150, 151)), regexp = "sorted")
+  expect_error(are_within(c(-35, -36), c(152, 151)), regexp = "sorted")
+})
+
+test_that("mutate_are_within", {
+  skip_if_not_installed("fst")
+  melb_latlons.fst <- system.file("extdata", "melb-latlons.fst", package = "whichWithin")
+  skip_if_not(file.exists(melb_latlons.fst))
+  melb_latlons <- fst::read_fst(melb_latlons.fst, as.data.table = TRUE, from = 1, to = 101)
+  orig_ADDRESS_DETAIL_INTRNL_ID <- copy(melb_latlons[["ADDRESS_DETAIL_INTRNL_ID"]])
+  melb_latlons_df <- as.data.frame(melb_latlons)
+  melb_latlons_col <-
+    mutate_are_within(melb_latlons, radius = "50km")
+  expect_identical(melb_latlons$ADDRESS_DETAIL_INTRNL_ID, orig_ADDRESS_DETAIL_INTRNL_ID)
+  
+  
+  melb_latlons_key <-
+    setkey(copy(melb_latlons), LATITUDE, LONGITUDE) %>%
+    .[, "are_within_50km" := are_within(LATITUDE, LONGITUDE, radius = "50km")] %>%
+    setkey(ADDRESS_DETAIL_INTRNL_ID)
+  
+  expect_identical(melb_latlons_key$are_within_50km,
+                   melb_latlons_col$are_within_50km)
+  
+  
+})
+
+
+
+

@@ -5,6 +5,18 @@
 
 using namespace Rcpp;
 
+// test_sum_identities
+IntegerVector test_sum_identities(int k, int j, int N);
+RcppExport SEXP _whichWithin_test_sum_identities(SEXP kSEXP, SEXP jSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type j(jSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_sum_identities(k, j, N));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Z4
 List Z4(DoubleVector x, DoubleVector y);
 RcppExport SEXP _whichWithin_Z4(SEXP xSEXP, SEXP ySEXP) {
@@ -85,42 +97,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type lon2(lon2SEXP);
     Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
     rcpp_result_gen = Rcpp::wrap(haversine_dist_klatlon(lat1, lon1, lat2, lon2, coslat1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// delta_lon_given_R
-double delta_lon_given_R(double coslat1, double sqrtR);
-RcppExport SEXP _whichWithin_delta_lon_given_R(SEXP coslat1SEXP, SEXP sqrtRSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
-    Rcpp::traits::input_parameter< double >::type sqrtR(sqrtRSEXP);
-    rcpp_result_gen = Rcpp::wrap(delta_lon_given_R(coslat1, sqrtR));
-    return rcpp_result_gen;
-END_RCPP
-}
-// delta_olon_given_R
-double delta_olon_given_R(double coslat1, double sqrtR);
-RcppExport SEXP _whichWithin_delta_olon_given_R(SEXP coslat1SEXP, SEXP sqrtRSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type coslat1(coslat1SEXP);
-    Rcpp::traits::input_parameter< double >::type sqrtR(sqrtRSEXP);
-    rcpp_result_gen = Rcpp::wrap(delta_olon_given_R(coslat1, sqrtR));
-    return rcpp_result_gen;
-END_RCPP
-}
-// haversine_distance_par
-DoubleVector haversine_distance_par(DoubleVector lat1, DoubleVector lon1, DoubleVector lat2, DoubleVector lon2, int nThread);
-RcppExport SEXP _whichWithin_haversine_distance_par(SEXP lat1SEXP, SEXP lon1SEXP, SEXP lat2SEXP, SEXP lon2SEXP, SEXP nThreadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< DoubleVector >::type lat1(lat1SEXP);
-    Rcpp::traits::input_parameter< DoubleVector >::type lon1(lon1SEXP);
-    Rcpp::traits::input_parameter< DoubleVector >::type lat2(lat2SEXP);
-    Rcpp::traits::input_parameter< DoubleVector >::type lon2(lon2SEXP);
-    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
-    rcpp_result_gen = Rcpp::wrap(haversine_distance_par(lat1, lon1, lat2, lon2, nThread));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -309,6 +285,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_whichWithin_test_sum_identities", (DL_FUNC) &_whichWithin_test_sum_identities, 3},
     {"_whichWithin_Z4", (DL_FUNC) &_whichWithin_Z4, 2},
     {"_whichWithin_Z4P", (DL_FUNC) &_whichWithin_Z4P, 3},
     {"_whichWithin_Char2Int", (DL_FUNC) &_whichWithin_Char2Int, 1},
@@ -316,9 +293,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_whichWithin_haversine_dist", (DL_FUNC) &_whichWithin_haversine_dist, 4},
     {"_whichWithin_haversine_dist_uys", (DL_FUNC) &_whichWithin_haversine_dist_uys, 4},
     {"_whichWithin_haversine_dist_klatlon", (DL_FUNC) &_whichWithin_haversine_dist_klatlon, 5},
-    {"_whichWithin_delta_lon_given_R", (DL_FUNC) &_whichWithin_delta_lon_given_R, 2},
-    {"_whichWithin_delta_olon_given_R", (DL_FUNC) &_whichWithin_delta_olon_given_R, 2},
-    {"_whichWithin_haversine_distance_par", (DL_FUNC) &_whichWithin_haversine_distance_par, 5},
     {"_whichWithin_engrid_1D", (DL_FUNC) &_whichWithin_engrid_1D, 4},
     {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 4},
     {"_whichWithin_do_is_within2", (DL_FUNC) &_whichWithin_do_is_within2, 4},

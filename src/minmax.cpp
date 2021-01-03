@@ -11,6 +11,31 @@ void vmax(double & xmax, double xi) {
   }
 }
 
+void vmin(int & xmax, int xi) {
+  if (xi < xmax) {
+    xmax = xi;
+  }
+}
+
+void vmax(int & xmax, int xi) {
+  if (xi > xmax) {
+    xmax = xi;
+  }
+}
+
+void vmaxmin(IntegerVector x, int & xmax, int & xmin) {
+  R_xlen_t N = x.length();
+  for (R_xlen_t i = 0; i < N; ++i) {
+    int xi = x[i];
+    vmax(xmax, xi);
+    vmin(xmin, xi);
+  }
+}
+
+
+
+
+
 void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y) {
   double xmin = ans[0];
   double xmax = ans[1];

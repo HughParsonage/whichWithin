@@ -11,7 +11,7 @@ int engrid_1D(double x, double r, double xmin, double Rx) {
 List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0) {
   R_xlen_t N = lat.length();
   if (N != lon.length() || N <= 1 || N > INT_MAX) {
-    stop("Internal error(do_which_within): bad lengths.");
+    stop("Internal error(do_which_within): bad lengths."); // # nocov
   }
   verify_sorted2(N, lat, lon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
   
