@@ -50,3 +50,23 @@ IntegerVector EncodeP(CharacterVector x) {
   
   return out;
 }
+
+// [[Rcpp::export(rng = false)]]
+CharacterVector Initials(CharacterVector x, CharacterVector y, int nThread = 1) {
+  R_xlen_t N = x.length();
+  if (N != y.length()) stop("lengtsh");
+  CharacterVector out = no_init(N);
+#pragma omp parallel for num_threads(nThread)
+  for (R_xlen_t i = 0; i < N; ++i) {
+    std::string si = "ab";
+    
+    si[0] = x[i][0];
+    si[1] = y[i][0];
+    out[i] = si;
+  }
+  return out;
+}
+
+
+
+

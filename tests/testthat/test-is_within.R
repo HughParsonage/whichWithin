@@ -23,66 +23,68 @@ test_that("is_within works", {
     melb_latlons10k <- melb_latlons[hutils::samp(1:.N, size = fifelse(is_64bit(), 10e3, 1e3))]
   })
   setkey(melb_latlons10k, LATITUDE, LONGITUDE)
-  res <- do_is_within(melb_latlons10k$LATITUDE,
-                      melb_latlons10k$LONGITUDE,
-                      r = 1)
-  
-  actual <-
-    cj2(melb_latlons10k$LATITUDE, 
-        melb_latlons10k$LONGITUDE,
-        as_data_table = TRUE,
-        new_cols = paste0("V", 1:6)) 
-  actual[, d := hutils::haversine_distance(V3, V4, V5, V6)]
-  
-  all_indices <- 
-    actual[d < 1, union(V1, V2)]
-  
-  all_indices <- all_indices[order(all_indices)]
-  
-  
-  # The indices of is within should be the indices where
-  # the distance is less than 1.
-  if (identical(which(res), all_indices)) {
-    expect_identical(which(res), all_indices)
-  } else {
-    # Maximum distance should be 10 m
-    wres <- which(res)
-    wres <- wres[wres %notin% all_indices]
+  for (test_r in c(0.5, 1)) {
+    res <- do_is_within(melb_latlons10k$LATITUDE,
+                        melb_latlons10k$LONGITUDE,
+                        r = test_r)
+    
+    actual <-
+      cj2(melb_latlons10k$LATITUDE, 
+          melb_latlons10k$LONGITUDE,
+          as_data_table = TRUE,
+          new_cols = paste0("V", 1:6)) 
+    actual[, d := hutils::haversine_distance(V3, V4, V5, V6)]
+    
+    all_indices <- 
+      actual[d < test_r, union(V1, V2)]
+    
+    all_indices <- all_indices[order(all_indices)]
     
     
-    mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
-    expect_gt(mind, 0.99)
-  }
-  
-  
-  res_are_within <- are_within(melb_latlons10k$LATITUDE, 
-                               melb_latlons10k$LONGITUDE,
-                               r = "1 km")
-  if (identical(which(res_are_within), all_indices)) {
-    expect_identical(which(res_are_within), all_indices)
-  } else {
-    # Maximum distance should be 10 m
-    wres <- which(res_are_within)
-    wres <- wres[wres %notin% all_indices]
-    
-    if (length(wres)) {
-      mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+    # The indices of is within should be the indices where
+    # the distance is less than 1.
+    if (identical(which(res), all_indices)) {
+      expect_identical(which(res), all_indices)
     } else {
-      # avoid the warning -- still correct
-      mind <- Inf
-    }
-    expect_gt(mind, 0.99)
-    
-    wres <- which(res_are_within)
-    wres <- all_indices[all_indices %notin% wres]
-    
-    if (length(wres)) {
+      # Maximum distance should be 10 m
+      wres <- which(res)
+      wres <- wres[wres %notin% all_indices]
+      
+      
       mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
-    } else {
-      # avoid the warning -- still correct
-      mind <- Inf
+      expect_gt(mind, test_r - 0.01)
     }
-    expect_gt(mind, 0.99)
+    
+    
+    res_are_within <- are_within(melb_latlons10k$LATITUDE, 
+                                 melb_latlons10k$LONGITUDE,
+                                 r = paste0(test_r, " km"))
+    if (identical(which(res_are_within), all_indices)) {
+      expect_identical(which(res_are_within), all_indices)
+    } else {
+      # Maximum distance should be 10 m
+      wres <- which(res_are_within)
+      wres <- wres[wres %notin% all_indices]
+      
+      if (length(wres)) {
+        mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+      } else {
+        # avoid the warning -- still correct
+        mind <- Inf
+      }
+      expect_gt(mind, test_r - 0.01)
+      
+      wres <- which(res_are_within)
+      wres <- all_indices[all_indices %notin% wres]
+      
+      if (length(wres)) {
+        mind <- actual[`|`(V1 %in% wres, V2 %in% wres), min(d)]
+      } else {
+        # avoid the warning -- still correct
+        mind <- Inf
+      }
+      expect_gt(mind, test_r - 0.01)
+    }
   }
   
 })

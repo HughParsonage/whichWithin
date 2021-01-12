@@ -36,6 +36,10 @@ List Sinusoidal(DoubleVector lat, DoubleVector lon, double lambda0 = NA_REAL) {
   double lambda_0 = ISNAN(lambda0) ? lon[N / 2] : lambda0; 
   
   for (R_xlen_t i = 0; i < N; ++i) {
+    if (ISNAN(lat[i]) || ISNAN(lon[i])) {
+      Rcerr << "i = " << (i + 1);
+      stop("lat or lon was NaN at above position.");
+    }
     y[i] = lat[i] * radf;
     x[i] = (lon[i] - lambda_0) * radf;
     double cos_phi = std::cos(y[i]);

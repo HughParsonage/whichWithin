@@ -255,7 +255,18 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   double xmin = xminmax[0];
   double xmax = xminmax[1];
   
-  unsigned char gg[2048][2048] = {};
+  unsigned char gg[GG_RES][GG_RES] = {};
+  
+  // Must make sure that engrid_1D won't exceed 2047
+  double max_gx = (xmax - xmin) / cart_r;
+  double max_gy = (ymax - ymin) / cart_r;
+  if (max_gx > GG_RES || max_gy > GG_RES) {
+    Rcerr << "max_gx = " << max_gx << ", " << "max_gy  = " << max_gy << "\n";
+    Rcerr << "GG_REX = " << GG_RES << "\n";
+    stop("max_gx exceeded. (radius too small for pixels).");
+  }
+  
+  
   
   
   IntegerVector GX = no_init(N);

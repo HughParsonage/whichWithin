@@ -36,6 +36,12 @@ are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL) {
   if (is.null(lambda0)) {
     lambda0 <- lon[length(lat) %/% 2]
   }
+  # Ought to do this pre-loading...
+  StackSize <- Cstack_info()[[1]]
+  if (sqrt(StackSize) - get_GG_RES() < 0) {
+    stop("sqrt(StackSize) = ", sqrt(StackSize), " cannot accommodate ",
+         "GG_RES = ", get_GG_RES())
+  }
   
   is_within_pixels(lat, lon, r, lambda0)
 }
@@ -115,8 +121,8 @@ mutate_are_within <- function(DT,
     ans <- .subset2(DTi, new_col)
     DTi <- NULL
   } else {
-    lat <- .subset2(DTi, latloncols[1])
-    lon <- .subset2(DTi, latloncols[2])
+    lat <- .subset2(DT, latloncols[1])
+    lon <- .subset2(DT, latloncols[2])
     ans <- are_within(lat, lon, radius = r, lambda0 = lambda0)
   }
   
