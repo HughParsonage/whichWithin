@@ -136,15 +136,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // do_which_within
-List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0);
-RcppExport SEXP _whichWithin_do_which_within(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP) {
+List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0, bool incl_distance);
+RcppExport SEXP _whichWithin_do_which_within(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP, SEXP incl_distanceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
     Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
     Rcpp::traits::input_parameter< double >::type r(rSEXP);
     Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
-    rcpp_result_gen = Rcpp::wrap(do_which_within(lat, lon, r, lambda0));
+    Rcpp::traits::input_parameter< bool >::type incl_distance(incl_distanceSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_which_within(lat, lon, r, lambda0, incl_distance));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -195,6 +196,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type r(rSEXP);
     Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
     rcpp_result_gen = Rcpp::wrap(is_within_pixels(lat, lon, r, lambda0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// do_locate_in_sorted
+R_xlen_t do_locate_in_sorted(int xi, IntegerVector y);
+RcppExport SEXP _whichWithin_do_locate_in_sorted(SEXP xiSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type xi(xiSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(do_locate_in_sorted(xi, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// all_in_sorted
+bool all_in_sorted(IntegerVector x, IntegerVector tbl);
+RcppExport SEXP _whichWithin_all_in_sorted(SEXP xSEXP, SEXP tblSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tbl(tblSEXP);
+    rcpp_result_gen = Rcpp::wrap(all_in_sorted(x, tbl));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -279,6 +302,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// first_non_na_dbl
+double first_non_na_dbl(DoubleVector x, double fill);
+RcppExport SEXP _whichWithin_first_non_na_dbl(SEXP xSEXP, SEXP fillSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< DoubleVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type fill(fillSEXP);
+    rcpp_result_gen = Rcpp::wrap(first_non_na_dbl(x, fill));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Sinusoidal
 List Sinusoidal(DoubleVector lat, DoubleVector lon, double lambda0);
 RcppExport SEXP _whichWithin_Sinusoidal(SEXP latSEXP, SEXP lonSEXP, SEXP lambda0SEXP) {
@@ -318,11 +352,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_whichWithin_haversine_dist_uys", (DL_FUNC) &_whichWithin_haversine_dist_uys, 4},
     {"_whichWithin_haversine_dist_klatlon", (DL_FUNC) &_whichWithin_haversine_dist_klatlon, 5},
     {"_whichWithin_engrid_1D", (DL_FUNC) &_whichWithin_engrid_1D, 4},
-    {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 4},
+    {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 5},
     {"_whichWithin_do_is_within2", (DL_FUNC) &_whichWithin_do_is_within2, 4},
     {"_whichWithin_do_which_within_within_1km", (DL_FUNC) &_whichWithin_do_which_within_within_1km, 2},
     {"_whichWithin_do_is_within", (DL_FUNC) &_whichWithin_do_is_within, 4},
     {"_whichWithin_is_within_pixels", (DL_FUNC) &_whichWithin_is_within_pixels, 4},
+    {"_whichWithin_do_locate_in_sorted", (DL_FUNC) &_whichWithin_do_locate_in_sorted, 2},
+    {"_whichWithin_all_in_sorted", (DL_FUNC) &_whichWithin_all_in_sorted, 2},
     {"_whichWithin_engrid", (DL_FUNC) &_whichWithin_engrid, 7},
     {"_whichWithin_high_prec_int", (DL_FUNC) &_whichWithin_high_prec_int, 1},
     {"_whichWithin_interleave_sorted", (DL_FUNC) &_whichWithin_interleave_sorted, 2},
@@ -330,6 +366,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_whichWithin_unique_sorted_inplace", (DL_FUNC) &_whichWithin_unique_sorted_inplace, 1},
     {"_whichWithin_is_sorted2", (DL_FUNC) &_whichWithin_is_sorted2, 3},
     {"_whichWithin_do_minmax", (DL_FUNC) &_whichWithin_do_minmax, 2},
+    {"_whichWithin_first_non_na_dbl", (DL_FUNC) &_whichWithin_first_non_na_dbl, 2},
     {"_whichWithin_Sinusoidal", (DL_FUNC) &_whichWithin_Sinusoidal, 3},
     {"_whichWithin_dist_sinusoidal", (DL_FUNC) &_whichWithin_dist_sinusoidal, 5},
     {NULL, NULL, 0}

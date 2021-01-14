@@ -5,7 +5,7 @@
 \alias{mutate_are_within}
 \title{Are points within a set distance?}
 \usage{
-are_within(lat, lon, radius = "1 km", lambda0 = NULL)
+are_within(lat, lon, radius = "1 km", lambda0 = NULL, na = FALSE)
 
 mutate_are_within(
   DT,
@@ -13,7 +13,8 @@ mutate_are_within(
   lambda0 = NULL,
   new_col = NULL,
   overwrite = NA,
-  latloncols = "auto"
+  latloncols = "auto",
+  na = FALSE
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ mutate_are_within(
 \item{lambda0}{Passed to the sinusoidal projection. Defaults to the
 median of \code{lon}. Use to indicate the longitude at which distortion
 should be zero (and smaller the the closer the longitude).}
+
+\item{na}{The result if \code{lat} or \code{lon} are missing.}
 
 \item{DT}{A data.frame, \code{data.table} preferred. Ideally, already
 \code{key(DT)} are the \code{lat,lon} columns in \code{DT}, as this will

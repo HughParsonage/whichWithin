@@ -45,8 +45,8 @@ engrid_1D <- function(x, r, xmin, Rx) {
     .Call(`_whichWithin_engrid_1D`, x, r, xmin, Rx)
 }
 
-do_which_within <- function(lat, lon, r, lambda0) {
-    .Call(`_whichWithin_do_which_within`, lat, lon, r, lambda0)
+do_which_within <- function(lat, lon, r, lambda0, incl_distance = FALSE) {
+    .Call(`_whichWithin_do_which_within`, lat, lon, r, lambda0, incl_distance)
 }
 
 do_is_within2 <- function(lat, lon, r, lambda0) {
@@ -63,6 +63,14 @@ do_is_within <- function(lat, lon, r, debug = FALSE) {
 
 is_within_pixels <- function(lat, lon, r, lambda0) {
     .Call(`_whichWithin_is_within_pixels`, lat, lon, r, lambda0)
+}
+
+do_locate_in_sorted <- function(xi, y) {
+    .Call(`_whichWithin_do_locate_in_sorted`, xi, y)
+}
+
+all_in_sorted <- function(x, tbl) {
+    .Call(`_whichWithin_all_in_sorted`, x, tbl)
 }
 
 engrid <- function(x, y, r, xmin = 1, xmax = -1, ymin = 1, ymax = -1) {
@@ -91,6 +99,10 @@ is_sorted2 <- function(x, y, s2) {
 
 do_minmax <- function(x, y) {
     .Call(`_whichWithin_do_minmax`, x, y)
+}
+
+first_non_na_dbl <- function(x, fill = 0) {
+    .Call(`_whichWithin_first_non_na_dbl`, x, fill)
 }
 
 Sinusoidal <- function(lat, lon, lambda0 = NA_real_) {

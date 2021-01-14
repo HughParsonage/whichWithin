@@ -5,6 +5,8 @@
 #' median of \code{lon}. Use to indicate the longitude at which distortion
 #' should be zero (and smaller the the closer the longitude). 
 #' 
+#' @param na The result if \code{lat} or \code{lon} are missing.
+#' 
 #' @return Logical vector \code{x} such that,
 #' for every \code{(lat[i],lon[i])}, \code{x[i]} is
 #' \code{TRUE} iff there is some \code{j} such that 
@@ -16,7 +18,8 @@
 #' 
 #' @export
 
-are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL) {
+are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL,
+                       na = FALSE) {
   r <- units2km(radius)
   if (length(lat) != length(lon)) {
     stop("`length(lat) = ", length(lat), "`, but ", 
@@ -26,6 +29,26 @@ are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL) {
   if (length(lat) > .Machine$integer.max) {
     stop("`lat` is a long vector: `length(lat) = ", prettyNum(length(lat)), "`, ",
          "which is not supported.")
+  }
+  na_indices <- logical(0)
+  if (anyNA(lat) || anyNA(lon)) {
+    na_indices <- !complete.cases(lat, lon)
+    
+    DT <- data.table(lat, lon, i = seq_along(lat))
+    DT0 <- DT[complete.cases(DT)]
+    setkeyv(DT0, c("lat", "lon"))
+    i <- foo <- i.foo <- NULL
+    ans0 <-
+      mutate_are_within(DT0, 
+                        radius = radius,
+                        lambda0 = lambda0, 
+                        latloncols = c("lat", "lon"), 
+                        new_col = "foo") %>%
+      setkeyv("i")
+    DT[, ans := na]
+    DT[DT0, ans := i.foo, on = "i"]
+    setorderv(DT, "i")
+    return(.subset2(DT, "ans"))
   }
   
   latlonsorted <- is_sorted2(lat, lon, c(NA, NA))
@@ -43,7 +66,11 @@ are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL) {
          "GG_RES = ", get_GG_RES())
   }
   
-  is_within_pixels(lat, lon, r, lambda0)
+  ans <- is_within_pixels(lat, lon, r, lambda0)
+  if (length(na_indices)) {
+    ans[na_indices] <- na
+  }
+  ans
 }
 
 #' @rdname are_within
@@ -67,7 +94,8 @@ mutate_are_within <- function(DT,
                               lambda0 = NULL, 
                               new_col = NULL,
                               overwrite = NA,
-                              latloncols = "auto") {
+                              latloncols = "auto",
+                              na = FALSE) {
   stopifnot(is.data.frame(DT))
   was_data_table <- is.data.table(DT)
   if (!was_data_table) {
@@ -115,7 +143,7 @@ mutate_are_within <- function(DT,
     lat <- lon <- NULL
     setnames(DTi, latloncols, c("lat", "lon"))
     setkeyv(DTi, c("lat", "lon"))
-    DTi[, (new_col) := are_within(lat, lon, radius = r, lambda0 = lambda0)]
+    DTi[, (new_col) := are_within(lat, lon, radius = r, lambda0 = lambda0, na = na)]
     setorderv(DTi, "i")
     # Now in original order
     ans <- .subset2(DTi, new_col)
@@ -123,7 +151,7 @@ mutate_are_within <- function(DT,
   } else {
     lat <- .subset2(DT, latloncols[1])
     lon <- .subset2(DT, latloncols[2])
-    ans <- are_within(lat, lon, radius = r, lambda0 = lambda0)
+    ans <- are_within(lat, lon, radius = r, lambda0 = lambda0, na = na)
   }
   
   
@@ -138,4 +166,33 @@ mutate_are_within <- function(DT,
   attributes(DT) <- orig_attributes
   DT
 }
+
+are_within_for <- function(lat, lon, radius = "1 km", lambda0 = NULL,
+                           na = FALSE) {
+  N <- length(lat)
+  out <- logical(N)
+  r <- units2km(radius)
+  for (i in seq_len(N - 1)) {
+    if (out[i]) {
+      next
+    }
+    if (is.na(lat[i]) || is.na(lon[i])) {
+      out[i] <- na
+      next
+    }
+    for (j in (i + 1):N) {
+      if (is.na(lat[j]) || is.na(lon[j])) {
+        out[j] <- na
+        next
+      }
+      if (haversine_dist(lat[i], lon[i], lat[j], lon[j]) < r) {
+        out[i] <- TRUE
+        out[j] <- TRUE
+      }
+    }
+  }
+  out[!complete.cases(lat, lon)] <- na
+  out
+}
+
 

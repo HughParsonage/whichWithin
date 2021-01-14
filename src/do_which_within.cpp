@@ -8,7 +8,8 @@ int engrid_1D(double x, double r, double xmin, double Rx) {
 
 
 // [[Rcpp::export(rng = false)]]
-List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0) {
+List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0, 
+                     bool incl_distance = false) {
   R_xlen_t N = lat.length();
   if (N != lon.length() || N <= 1 || N > INT_MAX) {
     stop("Internal error(do_which_within): bad lengths."); // # nocov
@@ -30,6 +31,8 @@ List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda
   orig.reserve(N);
   std::vector<int> dest;
   dest.reserve(N);
+  std::vector<double> out_dist;
+  out_dist.reserve(incl_distance ? N : 1);
   
   double R2 = cart_r * cart_r;
   
@@ -67,11 +70,18 @@ List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda
       if (d2 < R2) {
         orig.push_back(i + 1);
         dest.push_back(j + 1);
+        if (incl_distance) {
+          double d = std::sqrt(d2);
+          d *= EARTH_RADIUS_KM;
+          out_dist.push_back(d);
+        }
       }
     }
   }
   
-  return List::create(Named("orig") = wrap(orig), Named("dest") = wrap(dest));
+  return List::create(Named("orig") = wrap(orig),
+                      Named("dest") = wrap(dest),
+                      Named("dist") = wrap(out_dist));
 }
 
 // [[Rcpp::export(rng = false)]]
@@ -266,9 +276,6 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     stop("max_gx exceeded. (radius too small for pixels).");
   }
   
-  
-  
-  
   IntegerVector GX = no_init(N);
   IntegerVector GY = no_init(N);
   
@@ -326,5 +333,96 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   
 }
 
+
+R_xlen_t locate_in_sorted(int & xi, IntegerVector y, R_xlen_t a, R_xlen_t b, R_xlen_t & N) {
+  // return the 'best' guess for the location of xi in y, sorted ascending
+  // i.e. y[out] = xi if xi in y and y[out] != xi otherwise.
+  
+  if (xi <= y[a]) {
+    return a;
+  }
+  
+  R_xlen_t s = (b - a) / 4;
+  if (s < 64) {
+    for (R_xlen_t i = a; i <= b; ++i) {
+      if (xi <= y[i]) {
+        return i;
+      }
+    }
+    return b;
+  }
+  R_xlen_t m1 = a + s;
+  R_xlen_t m2 = m1 + s;
+  R_xlen_t m3 = m2 + s;
+
+  if (xi < m1) {
+    return locate_in_sorted(xi, y, a, m1, N);
+  }
+  // if (xi == y[m1]) {
+  //   return m1;
+  // }
+  if (xi < m2) {
+    return locate_in_sorted(xi, y, m1, m2, N);
+  }
+  // if (xi == y[m2]) {
+  //   return m2;
+  // }
+  if (xi < m3) {
+    return locate_in_sorted(xi, y, m2, m3, N);
+  }
+  // if (xi == y[m3]) {
+  //   return m3;
+  // }
+  return locate_in_sorted(xi, y, m3, b, N);
+}
+
+// [[Rcpp::export(rng = false)]]
+R_xlen_t do_locate_in_sorted(int xi, IntegerVector y) {
+  R_xlen_t N = y.length();
+  R_xlen_t a = 0; 
+  R_xlen_t b = N - 1;
+  if (a < 0 || b < a || b >= N || xi >= y[b]) {
+    return b;
+  }
+  return locate_in_sorted(xi, y, a, b, N);
+}
+
+// [[Rcpp::export(rng = false)]]
+bool all_in_sorted(IntegerVector x, IntegerVector tbl) {
+  R_xlen_t N = x.length();
+  R_xlen_t tn = tbl.length();
+  if (tn == 0) {
+    return false;
+  }
+  for (R_xlen_t i = 0; i < N; ++i) {
+    int xi = x[i];
+    for (R_xlen_t t = 0; t < tn; ++t) {
+      if (xi == tbl[t]) {
+        break;
+      }
+      if (xi < tbl[t] || (t + 1) == tn) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+#if false
+#include <omp.h>
+
+// [/[Rcpp::export(rng = false)]]
+IntegerVector all_integers(int nThread = 1) {
+  IntegerVector out = no_init(4294967296);
+#pragma omp parallel for num_threads(nThread)
+  for (unsigned int i = 0; i < 4294967295; ++i) {
+    int outi = static_cast<int>(i);
+    out[i] = outi;
+  }
+  out[4294967295] = -1;
+  return out;
+}
+
+#endif
 
 

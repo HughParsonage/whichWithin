@@ -19,6 +19,9 @@
 #' median of \code{lon}. Use to indicate the longitude at which distortion
 #' should be zero (and smaller the the closer the longitude). 
 #' 
+#' @param incl_dist (\code{TRUE | FALSE}) If \code{TRUE},
+#' an extra column is added that gives the distance between the relevant points.
+#' 
 #' @return 
 #' A \code{data.table} of two integer columns, \code{orig} and \code{dest}, 
 #' the indices of \code{lat,lon}
@@ -31,6 +34,7 @@
 #' setkey(DT, lat, lon)
 #' DT[, which_within(lat, lon, lambda0 = 150.5)]
 #' DT[, which_within(lat, lon, radius = "150 m")]
+#' DT[, which_within(lat, lon, incl_dist = TRUE)]
 #' 
 #' 
 #' 
@@ -39,7 +43,8 @@
 which_within <- function(lat, lon,
                          radius = "1 km", 
                          latlonsorted = NA,
-                         lambda0 = mean(lon)) {
+                         lambda0 = mean(lon, na.rm = TRUE),
+                         incl_dist = FALSE) {
   r <- units2km(radius)
   if (length(lat) != length(lon)) {
     stop("`length(lat) = ", length(lat), "`, but ", 
@@ -47,7 +52,8 @@ which_within <- function(lat, lon,
          "Lengths of `lat` and `lon` must be equal.")
   }
   if (length(lat) > .Machine$integer.max) {
-    stop("`lat` is a long vector: `length(lat) = ", prettyNum(length(lat)), "`, ",
+    stop("`lat` is a long vector: `length(lat) = ", 
+         prettyNum(length(lat), big.mark = ","), "`, ",
          "which is not supported.")
   }
   
@@ -57,7 +63,11 @@ which_within <- function(lat, lon,
     stop("lat,lon not sorted.")
   }
   
-  out <- do_which_within(lat, lon, r = r, lambda0 = lambda0)
+  out <- do_which_within(lat, lon, r = r, lambda0 = lambda0,
+                         incl_distance = isTRUE(incl_dist))
+  if (!isTRUE(incl_dist)) {
+    out <- out[1:2]
+  }
   setDT(out)
   setattr(out, "sorted", c("orig", "dest"))
   out[]
@@ -85,6 +95,7 @@ which_within_cj <- function(lat, lon, radius = "1 km",
   if (keep_DT) {
     return(CJ12[])
   }
+  
   CJ12[d < r, .SD, .SDcols = c("orig", "dest")]
 }
 

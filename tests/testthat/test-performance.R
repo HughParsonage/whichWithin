@@ -5,7 +5,9 @@ test_that("sufficiently fast", {
   melb_latlons.fst <- system.file("extdata", "melb-latlons.fst", package = "whichWithin")
   skip_if_not(file.exists(melb_latlons.fst))
   melb_latlons <- fst::read_fst(melb_latlons.fst, as.data.table = TRUE)
-  melb_latlons100k <- melb_latlons[hutils::samp(1:.N, size = 100e3)]
+  withr::with_seed(1, {
+    melb_latlons100k <- melb_latlons[hutils::samp(1:.N, size = 100e3)]
+  })
   setkey(melb_latlons100k, LATITUDE, LONGITUDE)
   timing_for_100k_1km <- bench::system_time(do_is_within2(melb_latlons100k$LATITUDE,
                                                          melb_latlons100k$LONGITUDE,

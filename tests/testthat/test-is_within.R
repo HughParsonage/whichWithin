@@ -56,6 +56,7 @@ test_that("is_within works", {
     }
     
     
+    
     res_are_within <- are_within(melb_latlons10k$LATITUDE, 
                                  melb_latlons10k$LONGITUDE,
                                  r = paste0(test_r, " km"))
@@ -130,6 +131,30 @@ test_that("mutate_are_within", {
   expect_identical(melb_latlons_key$are_within_50km,
                    melb_latlons_col$are_within_50km)
   
+  
+})
+
+test_that("NA handling", {
+  x <- c(1, 2, 3, NA, 4)
+  expect_equal(first_non_na_dbl(x), 1)
+  y <- c(NA, x)
+  expect_equal(first_non_na_dbl(y), 1)
+  z <- c(NA, NA_real_)
+  expect_equal(first_non_na_dbl(z, fill = 5), 5)
+  z0 <- double(0)
+  expect_equal(first_non_na_dbl(z0, fill = 5), 5)
+  
+  base_lat <- c(seq(-36, -35.5, length.out = 67), NA)
+  base_lon <- c(seq(145, 145.5, length.out = 67), NA)
+  
+  DT <- CJ(lat = base_lat,
+           lon = base_lon)
+  # Sort it
+  base_lat <- DT$lat
+  base_lon <- DT$lon
+  
+  expect_equal(are_within(base_lat, base_lon, radius = 3),
+               are_within_for(base_lat, base_lon, radius = 3))
   
 })
 

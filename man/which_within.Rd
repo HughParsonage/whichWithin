@@ -4,7 +4,14 @@
 \alias{which_within}
 \title{Which points are within a radius of each other?}
 \usage{
-which_within(lat, lon, radius = "1 km", latlonsorted = NA, lambda0 = mean(lon))
+which_within(
+  lat,
+  lon,
+  radius = "1 km",
+  latlonsorted = NA,
+  lambda0 = mean(lon, na.rm = TRUE),
+  incl_dist = FALSE
+)
 }
 \arguments{
 \item{lat, lon}{Numeric vectors of equal length defining the latitude
@@ -23,6 +30,9 @@ if unsorted.}
 \item{lambda0}{Passed to the sinusoidal projection. Defaults to the
 median of \code{lon}. Use to indicate the longitude at which distortion
 should be zero (and smaller the the closer the longitude).}
+
+\item{incl_dist}{(\code{TRUE | FALSE}) If \code{TRUE},
+an extra column is added that gives the distance between the relevant points.}
 }
 \value{
 A \code{data.table} of two integer columns, \code{orig} and \code{dest},
@@ -40,6 +50,7 @@ DT <- data.table(lat = runif(1000, -35, -34),
 setkey(DT, lat, lon)
 DT[, which_within(lat, lon, lambda0 = 150.5)]
 DT[, which_within(lat, lon, radius = "150 m")]
+DT[, which_within(lat, lon, incl_dist = TRUE)]
 
 
 

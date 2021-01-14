@@ -1,18 +1,36 @@
 #include "whichWithin.h"
 
+static void avg_lambda(double & lambda0, DoubleVector lon, R_xlen_t N) {
+  if (ISNAN(lambda0)) {
+    lambda0 = lon[N / 2];
+    if (ISNAN(lambda0)) {
+      double s = lon[0];
+      for (R_xlen_t i = 1; i < N; ++i) {
+        s += lon[i];
+      }
+      lambda0 = s / ((double)N);
+    }
+  }
+}
+
 void sinusoidal(R_xlen_t N,
                 DoubleVector x, 
                 DoubleVector y,
                 DoubleVector lat,
                 DoubleVector lon,
-                double lambda0) {
+                double lambda_0) {
   double radf = M_PI / 180.0;
   
   // choose the middle lambda (hopefully the median)
   // or one provided by the user
-  double lambda_0 = ISNAN(lambda0) ? lon[N / 2] : lambda0; 
+  avg_lambda(lambda_0, lon, N);
   
   for (R_xlen_t i = 0; i < N; ++i) {
+    if (ISNAN(lat[i]) || ISNAN(lon[i])) {
+      x[i] = R_PosInf;
+      y[i] = R_NegInf;
+      continue;
+    }
     y[i] = lat[i] * radf;
     x[i] = (lon[i] - lambda_0) * radf;
     double cos_phi = std::cos(y[i]);
@@ -37,7 +55,7 @@ List Sinusoidal(DoubleVector lat, DoubleVector lon, double lambda0 = NA_REAL) {
   
   for (R_xlen_t i = 0; i < N; ++i) {
     if (ISNAN(lat[i]) || ISNAN(lon[i])) {
-      Rcerr << "i = " << (i + 1);
+      Rcerr << "i = " << (i + 1) << "\n";
       stop("lat or lon was NaN at above position.");
     }
     y[i] = lat[i] * radf;

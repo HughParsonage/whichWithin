@@ -9,6 +9,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom magrittr and
 #' @importFrom magrittr or
+#' @importFrom stats complete.cases
 #' @importFrom stats median
 #' @importFrom stats setNames
 #' @importFrom utils hasName
