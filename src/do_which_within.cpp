@@ -5,6 +5,10 @@ int engrid_1D(double x, double r, double xmin, double Rx) {
   return (x - xmin) / r;
 }
 
+R_xlen_t array2(R_xlen_t i, R_xlen_t j, R_xlen_t imax, R_xlen_t jmax) {
+  return i + j * imax;
+}
+
 
 
 // [[Rcpp::export(rng = false)]]
@@ -265,7 +269,7 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   double xmin = xminmax[0];
   double xmax = xminmax[1];
   
-  unsigned char gg[GG_RES][GG_RES] = {};
+
   
   // Must make sure that engrid_1D won't exceed 2047
   double max_gx = (xmax - xmin) / cart_r;
@@ -275,6 +279,10 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     Rcerr << "GG_REX = " << GG_RES << "\n";
     stop("max_gx exceeded. (radius too small for pixels).");
   }
+  
+  std::vector<unsigned char> gg;
+  gg.reserve(max_gx * max_gy + max_gx + max_gy + 1);
+  std::fill(gg.begin(), gg.end(), 0);
   
   IntegerVector GX = no_init(N);
   IntegerVector GY = no_init(N);
@@ -289,16 +297,19 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     GX[i] = gix;
     GY[i] = giy;
     
-    cap_at_2(gg[gix][giy]);
+    cap_at_2(gg[array2(gix, giy, max_gx, max_gy)]);
   }
   
   
   LogicalVector out(N);
   
   for (R_xlen_t i = 0; i < N; ++i) {
+    // if (out[i]) {
+    //   continue;
+    // }
     int gix = GX[i];
     int giy = GY[i];
-    if (gg[gix][giy] >= 2) {
+    if (gg[array2(gix, giy, max_gx, max_gy)] >= 2) {
       out[i] = TRUE;
       continue;
     }

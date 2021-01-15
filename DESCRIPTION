@@ -1,6 +1,6 @@
 Package: whichWithin
 Title: Identify Collections of Points Within a Certain Radius
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: 
     person(given = "Hugh",
            family = "Parsonage",
@@ -13,7 +13,10 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
+    bench,
+    fst,
     geosphere,
+    mapproj,
     testthat,
     datasets
 LinkingTo: 

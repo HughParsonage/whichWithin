@@ -104,8 +104,8 @@ test_that("is_within_pixels coverage", {
 test_that("are_within error handling", {
   expect_error(are_within(0, 1:2), regexp = "length")
   if (is_64bit()) {
-    expect_error(are_within(double(3e9), double(3e9)), 
-                 regexp = "long")
+    expect_error(are_within(d231 <- double(2^31), d231), 
+                 regexp = "long|allocate")
   }
   expect_error(are_within(c(-35, -36), c(150, 151)), regexp = "sorted")
   expect_error(are_within(c(-35, -36), c(152, 151)), regexp = "sorted")
