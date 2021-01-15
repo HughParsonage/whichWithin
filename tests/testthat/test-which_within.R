@@ -50,3 +50,14 @@ test_that("Copes with NA", {
   
 })
 
+test_that("id column", {
+  DT <- data.table(id = c(4L, 5L, 1L, -5L), 
+                   lat = c(0, 0.05, 0.1, 1),
+                   lon = c(0, 0.05, 0, 1))
+  expect_equal(which_within(DT$lat, DT$lon, radius = 10, id = DT$id),
+               data.table(orig = c(4L, 5L),
+                          dest = c(5L, 1L)))
+  
+  
+})
+
