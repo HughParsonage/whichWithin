@@ -10,6 +10,7 @@ which_within(
   radius = "1 km",
   latlonsorted = NA,
   lambda0 = mean(lon, na.rm = TRUE),
+  id = NULL,
   incl_dist = FALSE
 )
 }
@@ -30,6 +31,11 @@ if unsorted.}
 \item{lambda0}{Passed to the sinusoidal projection. Defaults to the
 median of \code{lon}. Use to indicate the longitude at which distortion
 should be zero (and smaller the the closer the longitude).}
+
+\item{id}{(\code{integer(N)}) An optional vector specifying an alternative
+index as opposed to using
+the index of \code{lat,lon} in the result. Only used if an integer vector
+of the same length as \code{lat}.}
 
 \item{incl_dist}{(\code{TRUE | FALSE}) If \code{TRUE},
 an extra column is added that gives the distance between the relevant points.}

@@ -22,6 +22,11 @@
 #' @param incl_dist (\code{TRUE | FALSE}) If \code{TRUE},
 #' an extra column is added that gives the distance between the relevant points.
 #' 
+#' @param id (\code{integer(N)}) An optional vector specifying an alternative 
+#' index as opposed to using  
+#' the index of \code{lat,lon} in the result. Only used if an integer vector
+#' of the same length as \code{lat}.
+#' 
 #' @return 
 #' A \code{data.table} of two integer columns, \code{orig} and \code{dest}, 
 #' the indices of \code{lat,lon}
@@ -44,6 +49,7 @@ which_within <- function(lat, lon,
                          radius = "1 km", 
                          latlonsorted = NA,
                          lambda0 = mean(lon, na.rm = TRUE),
+                         id = NULL,
                          incl_dist = FALSE) {
   r <- units2km(radius)
   if (length(lat) != length(lon)) {
@@ -70,6 +76,13 @@ which_within <- function(lat, lon,
   }
   setDT(out)
   setattr(out, "sorted", c("orig", "dest"))
+  if (!is.null(id)) {
+    orig <- .subset2(out, "orig")
+    dest <- .subset2(out, "dest")
+    set(out, j = "orig", value = id[orig])
+    set(out, j = "dest", value = id[dest])
+  }
+  
   out[]
 }
 
