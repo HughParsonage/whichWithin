@@ -18,7 +18,8 @@ Suggests:
     geosphere,
     mapproj,
     testthat,
-    datasets
+    datasets,
+    withr
 LinkingTo: 
     Rcpp
 Imports: 

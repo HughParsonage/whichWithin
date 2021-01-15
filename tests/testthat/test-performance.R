@@ -2,6 +2,7 @@ test_that("sufficiently fast", {
   skip_on_cran()
   skip_if_not_installed("bench")
   skip_if_not_installed("fst")
+  skip_if_not_installed("withr")
   melb_latlons.fst <- system.file("extdata", "melb-latlons.fst", package = "whichWithin")
   skip_if_not(file.exists(melb_latlons.fst))
   melb_latlons <- fst::read_fst(melb_latlons.fst, as.data.table = TRUE)
