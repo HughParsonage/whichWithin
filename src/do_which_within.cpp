@@ -329,7 +329,8 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
       out[i] = TRUE;
       // continue;  <-- not correct because the i'th
       //                point may have neighbours for
-      //                whom i is the nearest point
+      //                whom i is the nearest point but 
+      //                who are outside the pixel
       
       //  +-----+-----+
       //  |     |     |
