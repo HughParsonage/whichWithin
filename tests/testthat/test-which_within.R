@@ -39,8 +39,8 @@ test_that("which_within works", {
 test_that("Copes with NA", {
   skip_on_cran()
   skip_if_not(is_64bit())
-  base_lat <- c(seq(-36, -35.5, length.out = 107), NA)
-  base_lon <- c(seq(145, 145.5, length.out = 107), NA)
+  base_lat <- c(seq(-36, -35.75, length.out = 67), NA)
+  base_lon <- c(seq(145, 145.25, length.out = 67), NA)
   DT <- CJ(lat = base_lat,
            lon = base_lon)
   
