@@ -17,6 +17,7 @@ Suggests:
     fst,
     geosphere,
     mapproj,
+    memuse,
     testthat,
     datasets,
     withr
