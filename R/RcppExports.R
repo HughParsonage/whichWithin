@@ -49,10 +49,6 @@ do_which_within <- function(lat, lon, r, lambda0, incl_distance = FALSE) {
     .Call(`_whichWithin_do_which_within`, lat, lon, r, lambda0, incl_distance)
 }
 
-do_is_within2 <- function(lat, lon, r, lambda0) {
-    .Call(`_whichWithin_do_is_within2`, lat, lon, r, lambda0)
-}
-
 do_which_within_within_1km <- function(lat, lon) {
     .Call(`_whichWithin_do_which_within_within_1km`, lat, lon)
 }

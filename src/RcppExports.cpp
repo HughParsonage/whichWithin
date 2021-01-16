@@ -149,19 +149,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// do_is_within2
-LogicalVector do_is_within2(DoubleVector lat, DoubleVector lon, double r, double lambda0);
-RcppExport SEXP _whichWithin_do_is_within2(SEXP latSEXP, SEXP lonSEXP, SEXP rSEXP, SEXP lambda0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< DoubleVector >::type lat(latSEXP);
-    Rcpp::traits::input_parameter< DoubleVector >::type lon(lonSEXP);
-    Rcpp::traits::input_parameter< double >::type r(rSEXP);
-    Rcpp::traits::input_parameter< double >::type lambda0(lambda0SEXP);
-    rcpp_result_gen = Rcpp::wrap(do_is_within2(lat, lon, r, lambda0));
-    return rcpp_result_gen;
-END_RCPP
-}
 // do_which_within_within_1km
 List do_which_within_within_1km(DoubleVector lat, DoubleVector lon);
 RcppExport SEXP _whichWithin_do_which_within_within_1km(SEXP latSEXP, SEXP lonSEXP) {
@@ -353,7 +340,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_whichWithin_haversine_dist_klatlon", (DL_FUNC) &_whichWithin_haversine_dist_klatlon, 5},
     {"_whichWithin_engrid_1D", (DL_FUNC) &_whichWithin_engrid_1D, 4},
     {"_whichWithin_do_which_within", (DL_FUNC) &_whichWithin_do_which_within, 5},
-    {"_whichWithin_do_is_within2", (DL_FUNC) &_whichWithin_do_is_within2, 4},
     {"_whichWithin_do_which_within_within_1km", (DL_FUNC) &_whichWithin_do_which_within_within_1km, 2},
     {"_whichWithin_do_is_within", (DL_FUNC) &_whichWithin_do_is_within, 4},
     {"_whichWithin_is_within_pixels", (DL_FUNC) &_whichWithin_is_within_pixels, 4},
