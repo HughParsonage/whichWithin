@@ -5,7 +5,7 @@ int engrid_1D(double x, double r, double xmin, double Rx) {
   return (x - xmin) / r;
 }
 
-R_xlen_t array2(R_xlen_t i, R_xlen_t j, R_xlen_t imax, R_xlen_t jmax) {
+int array2(int i, int j, int imax, int jmax) {
   return i + j * imax;
 }
 
@@ -245,14 +245,35 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     stop("r < 0.01 not supported.");
   }
   
-  double ranlatlon[4] = {lat[0],
-                         lat[N - 1],
-                            lon[0],
-                               lon[N - 1]};
-  
   DoubleVector x = no_init(N);
   DoubleVector y = no_init(N);
-  sinusoidal(N, x, y, lat, lon, lambda0);
+  double lambda_0 = lambda0 + 0.0;
+  if (ISNAN(lambda0)) {
+    lambda_0 = lon[0];
+    double n = (double)N;
+    for (R_xlen_t i = 1; i < N; ++i) {
+      if (ISNAN(lon[i])) {
+        n -= 1;
+      } else {
+        lambda_0 += lon[i];
+      }
+    }
+    lambda_0 /= n;
+  }
+  
+  double radf = M_PI / 180.0;
+  
+  for (R_xlen_t i = 0; i < N; ++i) {
+    if (ISNAN(lat[i]) || ISNAN(lon[i])) {
+      x[i] = R_PosInf;
+      y[i] = R_NegInf;
+      continue;
+    }
+    y[i] = lat[i] * radf;
+    x[i] = (lon[i] - lambda_0) * radf;
+    double cos_phi = std::cos(y[i]);
+    x[i] *= cos_phi;
+  }
   
   double cart_r = r / EARTH_RADIUS_KM;
   
@@ -260,7 +281,7 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   
   // for engrid_1D -- want max/max < 1. 
   // Note that putting nextafter within engrid_1D will _double_ the runtime
-  cart_r = std::nextafter(cart_r, R_PosInf); 
+  cart_r = std::nextafter(cart_r / 2.0, R_PosInf); 
   
   double ymin = y[0];
   double ymax = y[N - 1];
@@ -269,19 +290,14 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   double xmin = xminmax[0];
   double xmax = xminmax[1];
   
-
-  
   // Must make sure that engrid_1D won't exceed 2047
-  double max_gx = (xmax - xmin) / cart_r;
-  double max_gy = (ymax - ymin) / cart_r;
-  if (max_gx > GG_RES || max_gy > GG_RES) {
-    Rcerr << "max_gx = " << max_gx << ", " << "max_gy  = " << max_gy << "\n";
-    Rcerr << "GG_REX = " << GG_RES << "\n";
-    stop("max_gx exceeded. (radius too small for pixels).");
-  }
+  double dmax_gx = (xmax - xmin) / cart_r;
+  double dmax_gy = (ymax - ymin) / cart_r;
+  int max_gx = (int)dmax_gx;
+  int max_gy = (int)dmax_gy; 
   
-  std::vector<unsigned char> gg;
-  gg.reserve(max_gx * max_gy + max_gx + max_gy + 1);
+  R_xlen_t gg_N = max_gx * max_gy + max_gx + max_gy + 1;
+  std::vector<unsigned char> gg(gg_N);
   std::fill(gg.begin(), gg.end(), 0);
   
   IntegerVector GX = no_init(N);
@@ -297,43 +313,56 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     GX[i] = gix;
     GY[i] = giy;
     
-    cap_at_2(gg[array2(gix, giy, max_gx, max_gy)]);
+    int ai = array2(gix, giy, max_gx, max_gy);
+    unsigned char prev_ggai = gg[ai];
+    
+    gg[ai] = (prev_ggai >= 1) ? 2 : 1;
   }
-  
   
   LogicalVector out(N);
   
   for (R_xlen_t i = 0; i < N; ++i) {
-    // if (out[i]) {
-    //   continue;
-    // }
     int gix = GX[i];
     int giy = GY[i];
-    if (gg[array2(gix, giy, max_gx, max_gy)] >= 2) {
+    int ai = array2(gix, giy, max_gx, max_gy);
+    if (gg[ai] >= 2) {
       out[i] = TRUE;
-      continue;
+      // continue;  <-- not correct because the i'th
+      //                point may have neighbours for
+      //                whom i is the nearest point
+      
+      //  +-----+-----+
+      //  |     |     |
+      //  |     | j   |
+      //  +-----+-----+
+      //  |     |     |
+      //  |     |     |
+      //  +-----+-----+
+      //  ^__
+      //    i
+      
     }
     
     double xi = x[i];
     double yi = y[i];
-
     
     for (R_xlen_t j = (i + 1); j < N; ++j) {
-      double xj = x[j];
-      double yj = y[j];
       int gjx = GX[j];
       int gjy = GY[j];
 
       int dgijx = gjx - gix;
 
-      if (dgijx > 1) {
+      if (dgijx > 2) {
         continue;
       }
       int dgijy = gjy - giy;
-      if (dgijy > 1) {
+      if (dgijy > 2) {
         break;
       }
-      double d2 = euclid_dist_sq(x[i], y[i], x[j], y[j]);
+      
+      double xj = x[j];
+      double yj = y[j];
+      double d2 = euclid_dist_sq(xi, yi, xj, yj);
       if (d2 < R2) {
         out[i] = TRUE;
         out[j] = TRUE;

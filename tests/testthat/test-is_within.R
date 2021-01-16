@@ -61,6 +61,14 @@ test_that("is_within works", {
     res_are_within <- are_within(melb_latlons10k$LATITUDE, 
                                  melb_latlons10k$LONGITUDE,
                                  r = paste0(test_r, " km"))
+    s <- sum(res_are_within)
+    
+    # Repeating doesn't give identical answers? 
+    res_are_within <- are_within(melb_latlons10k$LATITUDE, 
+                                 melb_latlons10k$LONGITUDE,
+                                 r = paste0(test_r, " km"))
+    expect_equal(s, sum(res_are_within))
+    
     if (identical(which(res_are_within), all_indices)) {
       expect_identical(which(res_are_within), all_indices)
     } else {
