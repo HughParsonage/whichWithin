@@ -59,12 +59,6 @@ are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL,
   if (is.null(lambda0)) {
     lambda0 <- lon[length(lat) %/% 2]
   }
-  # Ought to do this pre-loading...
-  StackSize <- Cstack_info()[[1]]
-  if (sqrt(StackSize) - get_GG_RES() < 0) {
-    stop("sqrt(StackSize) = ", sqrt(StackSize), " cannot accommodate ",
-         "GG_RES = ", get_GG_RES())
-  }
   
   ans <- is_within_pixels(lat, lon, r, lambda0)
   if (length(na_indices)) {
