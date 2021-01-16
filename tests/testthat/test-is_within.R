@@ -104,12 +104,16 @@ test_that("is_within_pixels coverage", {
 
 test_that("are_within error handling", {
   expect_error(are_within(0, 1:2), regexp = "length")
-  if (is_64bit()) {
-    expect_error(are_within(d231 <- double(2^31), d231), 
-                 regexp = "long|allocate")
-  }
   expect_error(are_within(c(-35, -36), c(150, 151)), regexp = "sorted")
   expect_error(are_within(c(-35, -36), c(152, 151)), regexp = "sorted")
+  if (is_64bit()) {
+    skip_on_ci()
+    d231 <- tryCatch(double(2^31), error = function(e) double(0))
+    if (length(d231)) {
+      expect_error(are_within(d231, d231), 
+                   regexp = "long|allocate")
+    }
+  }
 })
 
 test_that("mutate_are_within", {

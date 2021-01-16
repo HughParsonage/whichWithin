@@ -1,5 +1,6 @@
 test_that("sufficiently fast", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("bench")
   skip_if_not_installed("fst")
   skip_if_not_installed("withr")
