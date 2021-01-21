@@ -17,18 +17,6 @@ Z4P <- function(x, y, nThread = 1L) {
     .Call(`_whichWithin_Z4P`, x, y, nThread)
 }
 
-Char2Int <- function(x) {
-    .Call(`_whichWithin_Char2Int`, x)
-}
-
-EncodeP <- function(x) {
-    .Call(`_whichWithin_EncodeP`, x)
-}
-
-Initials <- function(x, y, nThread = 1L) {
-    .Call(`_whichWithin_Initials`, x, y, nThread)
-}
-
 haversine_dist <- function(olat1, olon1, olat2, olon2) {
     .Call(`_whichWithin_haversine_dist`, olat1, olon1, olat2, olon2)
 }

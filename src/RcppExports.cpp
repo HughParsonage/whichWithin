@@ -50,38 +50,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Char2Int
-IntegerVector Char2Int(CharacterVector x);
-RcppExport SEXP _whichWithin_Char2Int(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(Char2Int(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// EncodeP
-IntegerVector EncodeP(CharacterVector x);
-RcppExport SEXP _whichWithin_EncodeP(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(EncodeP(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Initials
-CharacterVector Initials(CharacterVector x, CharacterVector y, int nThread);
-RcppExport SEXP _whichWithin_Initials(SEXP xSEXP, SEXP ySEXP, SEXP nThreadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type nThread(nThreadSEXP);
-    rcpp_result_gen = Rcpp::wrap(Initials(x, y, nThread));
-    return rcpp_result_gen;
-END_RCPP
-}
 // haversine_dist
 double haversine_dist(double olat1, double olon1, double olat2, double olon2);
 RcppExport SEXP _whichWithin_haversine_dist(SEXP olat1SEXP, SEXP olon1SEXP, SEXP olat2SEXP, SEXP olon2SEXP) {
@@ -332,9 +300,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_whichWithin_test_sum_identities", (DL_FUNC) &_whichWithin_test_sum_identities, 3},
     {"_whichWithin_Z4", (DL_FUNC) &_whichWithin_Z4, 2},
     {"_whichWithin_Z4P", (DL_FUNC) &_whichWithin_Z4P, 3},
-    {"_whichWithin_Char2Int", (DL_FUNC) &_whichWithin_Char2Int, 1},
-    {"_whichWithin_EncodeP", (DL_FUNC) &_whichWithin_EncodeP, 1},
-    {"_whichWithin_Initials", (DL_FUNC) &_whichWithin_Initials, 3},
     {"_whichWithin_haversine_dist", (DL_FUNC) &_whichWithin_haversine_dist, 4},
     {"_whichWithin_haversine_dist_uys", (DL_FUNC) &_whichWithin_haversine_dist_uys, 4},
     {"_whichWithin_haversine_dist_klatlon", (DL_FUNC) &_whichWithin_haversine_dist_klatlon, 5},
