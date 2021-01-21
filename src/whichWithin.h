@@ -8,9 +8,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-const int GG_RES = 3000;
-
-
+const int GG_RES = 2076;
 
 void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y);
 void aminmax1(double ans[2], DoubleVector x, R_xlen_t N);
