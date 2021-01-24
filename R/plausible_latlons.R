@@ -8,7 +8,17 @@
 #' @export
 
 plausible_latloncols <- function(DT, vname_DT = "DT") {
-  noms <- names(DT)
+  noms <- tolower(names(DT))
+  for (lat_name in c("latitude", "lat")) {
+    for (lon_name in c("longitude", "lon", "long")) {
+      if (tolower(lat_name) %in% noms &&
+          tolower(lon_name) %in% noms) {
+        return(names(DT)[c(match(c(lat_name, lon_name), noms))])
+      }
+    }
+  }
+  
+  
   alat <- agrep("latitude", noms, ignore.case = TRUE)
   alon <- agrep("longitude", noms, ignore.case = TRUE)
   lat_nom <- lon_nom <- NULL
@@ -23,17 +33,15 @@ plausible_latloncols <- function(DT, vname_DT = "DT") {
   }
   
   if (length(alat) == 0) {
-    warning("No obvious names for latitude in `", vname_DT, "`.")
     alat <- agrep("lat", noms, ignore.case = TRUE)
+    if (length(alat) == 0) {
+      stop("No names for latitude.")
+    } else if (length(alat) > 1) {
+      warning("Multiple plausible names for latitude. Did you mean ", toString(noms[alat]))
+    }
   }
   if (length(alon) == 0) {
-    warning("No obvious names for longitude in `", vname_DT, "`.")
     alon <- agrep("lon", noms, ignore.case = TRUE)
-  }
-  if (length(alat) == 0) {
-    stop("No names for latitude.")
-  } else if (length(alat) > 1) {
-    warning("Multiple plausible names for latitude. Did you mean ", toString(noms[alat]))
   }
   if (length(alon) == 0) {
     stop("No names for longitude.")

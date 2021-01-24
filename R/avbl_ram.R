@@ -1,5 +1,6 @@
 
 
+# nocov start
 avbl_ram_gb <- function() {
   if (requireNamespace("memuse", quietly = TRUE)) {
     Sys_memuse <- memuse::Sys.meminfo()[["freeram"]]
@@ -14,3 +15,4 @@ avbl_ram_gb <- function() {
     return(size_gb)
   }
 }
+# nocov end
