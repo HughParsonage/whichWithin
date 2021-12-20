@@ -71,9 +71,14 @@ which_within <- function(lat, lon,
   
   out <- do_which_within(lat, lon, r = r, lambda0 = lambda0,
                          incl_distance = isTRUE(incl_dist))
+  
   if (!isTRUE(incl_dist)) {
     out <- out[1:2]
   }
+  if (length(out[[1]]) > .Machine$integer.max) {
+    return(invisible(out))
+  }
+  
   setDT(out)
   setattr(out, "sorted", c("orig", "dest"))
   if (!is.null(id)) {
