@@ -5,8 +5,13 @@
 #include <omp.h>
 #endif
 
-#include <Rcpp.h>
-using namespace Rcpp;
+#include <R.h>
+#define USE_RINTERNALS
+#include <Rinternals.h>
+#include <stdint.h> // for uint64_t rather than unsigned long long
+#include <stdbool.h>
+#include <math.h>
+#include <ctype.h>
 
 const int GG_RES = 2076;
 
