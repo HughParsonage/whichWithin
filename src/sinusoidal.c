@@ -86,10 +86,10 @@ SEXP Cdist_sinusoidal(SEXP llat1,
     error("Internal error(Cdist_sinusoidal): long types."); // # nocov
   }
   
-  const double lat1 = REAL(llat1);
-  const double lat2 = REAL(llat2);
-  const double lon1 = REAL(llon1);
-  const double lon2 = REAL(llon2);
+  const double * lat1 = REAL(llat1);
+  const double * lat2 = REAL(llat2);
+  const double * lon1 = REAL(llon1);
+  const double * lon2 = REAL(llon2);
   
   double lambda0 = asReal(llambda0);
   R_xlen_t N = xlength(llat1);

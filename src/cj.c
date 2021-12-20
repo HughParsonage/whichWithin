@@ -25,26 +25,38 @@ R_xlen_t sum_n_le2(R_xlen_t N) {
   return (N * (N - 1)) / 2;
 }
 
-// [[Rcpp::export(rng = false)]]
-IntegerVector test_sum_identities(int k = 50, int j = 2, int N = 100) {
-  IntegerVector out(4);
+SEXP test_sum_identities(int k = 50, int j = 2, int N = 100) {
+  SEXP oout = allocVector(INTSXP, 4);
+  int * out = INTEGER(oout);
   out[0] = sum_first_k(k);
   out[1] = sum_n_minus_seq(j, N);
   out[2] = sum_n_le(N);
   out[3] = sum_n_le2(N);
-  return out;
+  return oout;
 }
 
-// [[Rcpp::export(rng = false)]]
-List Z4(DoubleVector x, DoubleVector y) {
-  R_xlen_t n = x.length();
+
+SEXP Z4(SEXP xx, SEXP yy) {
+  if (!isReal(xx) || !isReal(yy)) {
+    error("xx and yy must be REALSXP."); // # nocov
+  }
+  const double * x = REAL(xx);
+  const double * y = REAL(yy);
+  R_xlen_t n = xlength(xx);
   R_xlen_t N = sum_n_le2(n);
-  IntegerVector id1(N);
-  IntegerVector id2(N);
-  DoubleVector lat1(N);
-  DoubleVector lat2(N);
-  DoubleVector lon1(N);
-  DoubleVector lon2(N);
+  SEXP iid1 = PROTECT(allocVector(INTSXP, N));
+  SEXP iid2 = PROTECT(allocVector(INTSXP, N));
+  SEXP llat1 = PROTECT(allocVector(REALSXP, N));
+  SEXP llat2 = PROTECT(allocVector(REALSXP, N));
+  SEXP llon1 = PROTECT(allocVector(REALSXP, N));
+  SEXP llon2 = PROTECT(allocVector(REALSXP, N));
+  
+  int * restrict id1 = INTEGER(iid1);
+  int * restrict id1 = INTEGER(iid2);
+  double * restrict lat1 = REAL(llat1);
+  double * restrict lat2 = REAL(llat2);
+  double * restrict lon1 = REAL(llon1);
+  double * restrict lon2 = REAL(llon2);
   
   R_xlen_t k = 0;
   for (R_xlen_t i = 0; i < n; ++i) {
@@ -57,27 +69,47 @@ List Z4(DoubleVector x, DoubleVector y) {
       lon2[k] = y[j];
     }
   }
-  return List::create(id1, id2, lat1, lon1, lat2, lon2);
+  SEXP ans = PROTECT(allocVector(VECSXP, 6));
+  SET_VECTOR_ELT(ans, 0, id1);
+  SET_VECTOR_ELT(ans, 1, id2);
+  SET_VECTOR_ELT(ans, 2, lat1);
+  SET_VECTOR_ELT(ans, 3, lon1);
+  SET_VECTOR_ELT(ans, 4, lat2);
+  SET_VECTOR_ELT(ans, 5, lon2);
+  UNPROTECT(7);
+  return ans;
 }
 
 // [[Rcpp::export(rng = false)]]
-List Z4P(DoubleVector x, DoubleVector y, int nThread = 1) {
-  R_xlen_t n = x.length();
+List Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
+  int nThread = asInteger(nthreads);
+  if (!isReal(xx) || !isReal(yy)) {
+    error("xx and yy must be REALSXP."); // # nocov
+  }
+  const double * x = REAL(xx);
+  const double * y = REAL(yy);
+  R_xlen_t n = xlength(xx);
   R_xlen_t N = sum_n_le2(n);
-  IntegerVector id1 = no_init(N);
-  IntegerVector id2 = no_init(N);
-  DoubleVector lat1 = no_init(N);
-  DoubleVector lat2 = no_init(N);
-  DoubleVector lon1 = no_init(N);
-  DoubleVector lon2 = no_init(N);
+  SEXP iid1 = PROTECT(allocVector(INTSXP, N));
+  SEXP iid2 = PROTECT(allocVector(INTSXP, N));
+  SEXP llat1 = PROTECT(allocVector(REALSXP, N));
+  SEXP llat2 = PROTECT(allocVector(REALSXP, N));
+  SEXP llon1 = PROTECT(allocVector(REALSXP, N));
+  SEXP llon2 = PROTECT(allocVector(REALSXP, N));
   
+  int * restrict id1 = INTEGER(iid1);
+  int * restrict id1 = INTEGER(iid2);
+  double * restrict lat1 = REAL(llat1);
+  double * restrict lat2 = REAL(llat2);
+  double * restrict lon1 = REAL(llon1);
+  double * restrict lon2 = REAL(llon2);
+  
+  R_xlen_t k = 0;
 #if defined _OPENMP && _OPENMP >= 201511
-#pragma omp parallel for num_threads(nThread)
+#pragma omp parallel for num_htreads(nThread)
 #endif
   for (R_xlen_t i = 0; i < n; ++i) {
-    R_xlen_t k0 = sum_n_minus_seq(i, n);
-    for (R_xlen_t j = i + 1; j < n; ++j) {
-      R_xlen_t k = k0 + j - i - 1;
+    for (R_xlen_t j = i + 1; j < n; ++j, ++k) {
       id1[k] = i + 1;
       id2[k] = j + 1;
       lat1[k] = x[i];
@@ -86,6 +118,14 @@ List Z4P(DoubleVector x, DoubleVector y, int nThread = 1) {
       lon2[k] = y[j];
     }
   }
-  return List::create(id1, id2, lat1, lon1, lat2, lon2);
+  SEXP ans = PROTECT(allocVector(VECSXP, 6));
+  SET_VECTOR_ELT(ans, 0, id1);
+  SET_VECTOR_ELT(ans, 1, id2);
+  SET_VECTOR_ELT(ans, 2, lat1);
+  SET_VECTOR_ELT(ans, 3, lon1);
+  SET_VECTOR_ELT(ans, 4, lat2);
+  SET_VECTOR_ELT(ans, 5, lon2);
+  UNPROTECT(7);
+  return ans;
 }
 
