@@ -10,7 +10,7 @@ IntegerVector engrid(DoubleVector x, DoubleVector y, double r,
   }
   
   double rxy[4] = {xmin, xmax, ymin, ymax};
-  aminmax_dbl(rxy, x, y);
+  aminmax_dbl(rxy, x, y, N);
   
   double rx = rxy[1] - rxy[0];
   double ry = rxy[3] - rxy[2];
