@@ -36,7 +36,7 @@ void vmaxmin(IntegerVector x, int & xmax, int & xmin) {
 
 
 
-void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y) {
+void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N) {
   double xmin = ans[0];
   double xmax = ans[1];
   double ymin = ans[2];
@@ -49,7 +49,6 @@ void aminmax_dbl(double ans[4], DoubleVector x, DoubleVector y) {
   xmax = x[0];
   ymin = y[0];
   ymax = y[0];
-  R_xlen_t N = x.length();
   
   for (R_xlen_t i = 0; i < N; ++i) {
     double xi = x[i], yi = y[i];
