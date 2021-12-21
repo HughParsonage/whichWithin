@@ -22,10 +22,7 @@ Suggests:
     testthat,
     datasets,
     withr
-LinkingTo: 
-    Rcpp
 Imports: 
-    Rcpp,
     checkmate,
     data.table,
     hutils,

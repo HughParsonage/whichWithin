@@ -1,6 +1,6 @@
 #include "whichWithin.h"
 
-// [[Rcpp::export(rng = false)]]
+
 int engrid_1D(double x, double r, double xmin, double Rx) {
   return (x - xmin) / r;
 }
@@ -10,14 +10,16 @@ int array2(int i, int j, int imax, int jmax) {
 }
 
 
-
-// [[Rcpp::export(rng = false)]]
-List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda0, 
-                     bool incl_distance = false) {
-  R_xlen_t N = lat.length();
-  if (N != lon.length() || N <= 1 || N > INT_MAX) {
-    stop("Internal error(do_which_within): bad lengths."); // # nocov
+SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr, 
+                     SEXP llambda0, 
+                     SEXP iincl_distance) {
+  R_xlen_t N = xlength(llat);
+  
+  if (N != xlength(llon) || N <= 1 || N > INT_MAX) {
+    error("Internal error(do_which_within): bad lengths."); // # nocov
   }
+  const double * lat = REAL(llat);
+  const double * lon = REAL(llon);
   verify_sorted2(N, lat, lon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
   
   double ranlatlon[4] = {lat[0],
@@ -25,8 +27,8 @@ List do_which_within(DoubleVector lat, DoubleVector lon, double r, double lambda
                             lon[0],
                                lon[N - 1]};
   
-  DoubleVector x = no_init(N);
-  DoubleVector y = no_init(N);
+  SEXP x = PROTECT(allocVec(REALSXP, N));
+  SEXP y = PROTECT(allocVector(REALSXP, N));
   sinusoidal(N, x, y, lat, lon, lambda0);
   
   double cart_r = r / EARTH_RADIUS_KM;
