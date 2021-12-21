@@ -13,6 +13,9 @@ int array2(int i, int j, int imax, int jmax) {
 SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr, 
                      SEXP llambda0, 
                      SEXP iincl_distance) {
+  const double r = asReal(rr);
+  const double lambda0 = asReal(llambda0);
+  const bool incl_distance = asLogical(iincl_distance);
   R_xlen_t N = xlength(llat);
   
   if (N != xlength(llon) || N <= 1 || N > INT_MAX) {
@@ -27,7 +30,7 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
                             lon[0],
                                lon[N - 1]};
   
-  SEXP x = PROTECT(allocVec(REALSXP, N));
+  SEXP x = PROTECT(allocVector(REALSXP, N));
   SEXP y = PROTECT(allocVector(REALSXP, N));
   sinusoidal(N, x, y, lat, lon, lambda0);
   
