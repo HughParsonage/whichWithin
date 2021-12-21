@@ -15,7 +15,7 @@
 
 const int GG_RES = 2076;
 
-void aminmax_dbl(double ans[4], SEXP x, SEXP y);
+void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N);
 void aminmax1(double ans[2], SEXP x, R_xlen_t N);
 void vmaxmin(SEXP x, int * xmax, int * xmin);
 void sinusoidal(R_xlen_t N, SEXP x, SEXP y, SEXP lat, SEXP lon, double lambda0);
