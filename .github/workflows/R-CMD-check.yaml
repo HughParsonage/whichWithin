@@ -57,7 +57,7 @@ jobs:
       - name: Install packages
         shell: bash
         run: |
-          Rdevel -q -e "install.packages(c('remotes', 'rcmdcheck'));remotes::install_deps(repos = 'https://cran.rstudio.com/')"
+          Rdevel -q -e "install.packages(c('remotes', 'rcmdcheck',  'bench', 'fst', 'geosphere', 'mapproj', 'memuse', 'testthat'));remotes::install_deps(repos = 'https://cran.rstudio.com/')"
           Rdevel CMD build .
           Rdevel CMD INSTALL --install-tests *.tar.gz
           Rdevel -q -e "rcmdcheck::rcmdcheck()"
