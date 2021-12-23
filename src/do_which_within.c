@@ -23,48 +23,58 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
   }
   const double * lat = REAL(llat);
   const double * lon = REAL(llon);
-  verify_sorted2(N, lat, lon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
-  
-  double ranlatlon[4] = {lat[0],
-                         lat[N - 1],
-                            lon[0],
-                               lon[N - 1]};
+  verify_sorted2(N, llat, llon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
   
   SEXP x = PROTECT(allocVector(REALSXP, N));
   SEXP y = PROTECT(allocVector(REALSXP, N));
-  sinusoidal(N, x, y, lat, lon, lambda0);
+  double * xp = REAL(x);
+  double * yp = REAL(y);
+  sinusoidal(N, xp, yp, lat, lon, lambda0);
   
   double cart_r = r / EARTH_RADIUS_KM;
   
-  std::vector<int> orig;
-  orig.reserve(N);
-  std::vector<int> dest;
-  dest.reserve(N);
-  std::vector<double> out_dist;
-  out_dist.reserve(incl_distance ? N : 1);
+  R_xlen_t oN = 0, oM = N;
+  int * orig = malloc(sizeof(int) * N);
+  int * dest = malloc(sizeof(int) * N);
+  double * out_dist = malloc(sizeof(double) * (incl_distance ? N : 1));
+  if (orig == NULL || dest == NULL || out_dist == NULL) {
+    UNPROTECT(2);
+    free(orig);
+    free(dest);
+    free(out_dist);
+    error("Unable to allocate orig,dest,out_dist via malloc."); // # nocov
+  }
   
   double R2 = cart_r * cart_r;
   
   // for engrid_1D -- want max/max < 1. 
   // Note that putting nextafter within engrid_1D will _double_ the runtime
-  cart_r = std::nextafter(cart_r, R_PosInf); 
+  cart_r = nextafter(cart_r, R_PosInf); 
   
-  double ymin = y[0];
-  double ymax = y[N - 1];
-  double xminmax[2] = {x[0], x[N - 1]};
-  aminmax1(xminmax, x, N);
+  double ymin = REAL(y)[0];
+  double ymax = REAL(y)[N - 1];
+  double xminmax[2] = {REAL(x)[0], REAL(x)[N - 1]};
+  aminmax1(xminmax, xp, N);
   double xmin = xminmax[0];
   double xmax = xminmax[1];
   
   for (R_xlen_t i = 0; i < N - 1; ++i) {
-    double xi = x[i];
-    double yi = y[i];
+    if ((oN + N) >= oM) {
+      oM += N + 1;
+      orig = realloc(orig, sizeof(int) * oM);
+      dest = realloc(dest, sizeof(int) * oM);
+      if (incl_distance) {
+        out_dist = realloc(out_dist, sizeof(double) * oM);
+      }
+    }
+    double xi = xp[i];
+    double yi = yp[i];
     int gix = engrid_1D(xi, cart_r, xmin, xmax);
     int giy = engrid_1D(yi, cart_r, ymin, ymax);
     
     for (R_xlen_t j = (i + 1); j < N; ++j) {
-      double xj = x[j];
-      double yj = y[j];
+      double xj = xp[j];
+      double yj = yp[j];
       int gjx = engrid_1D(xj, cart_r, xmin, xmax);
       int gjy = engrid_1D(yj, cart_r, ymin, ymax);
       int dgijx = gjx - gix;
@@ -75,33 +85,64 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
       if (dgijy > 1) {
         break;
       }
-      double d2 = euclid_dist_sq(x[i], y[i], x[j], y[j]);
+      double d2 = euclid_dist_sq(xp[i], yp[i], xp[j], yp[j]);
       if (d2 < R2) {
-        orig.push_back(i + 1);
-        dest.push_back(j + 1);
+        orig[oN] = i + 1;
+        dest[oN] = j + 1;
         if (incl_distance) {
-          double d = std::sqrt(d2);
+          double d = sqrt(d2);
           d *= EARTH_RADIUS_KM;
-          out_dist.push_back(d);
+          out_dist[oN] = d;
         }
+        ++oN;
       }
     }
   }
   
-  return List::create(Named("orig") = wrap(orig),
-                      Named("dest") = wrap(dest),
-                      Named("dist") = wrap(out_dist));
+  // return List::create(Named("orig") = wrap(orig),
+  //                     Named("dest") = wrap(dest),
+  //                     Named("dist") = wrap(out_dist));
+  SEXP ans = PROTECT(allocVector(VECSXP, 3));
+  SEXP ans0 = PROTECT(allocVector(INTSXP, oN));
+  SEXP ans1 = PROTECT(allocVector(INTSXP, oN));
+  SEXP ans2 = PROTECT(allocVector(REALSXP, incl_distance ? oN : 1));
+  int * ans0p = INTEGER(ans0);
+  int * ans1p = INTEGER(ans1);
+  double * ans2p = REAL(ans2);
+  ans2p[0] = out_dist[0];
+  for (R_xlen_t i = 0; i < oN; ++i) {
+    ans0p[i] = orig[i];
+    ans1p[i] = dest[i];
+    if (incl_distance) {
+      ans2p[i] = out_dist[i];
+    }
+  }
+  free(orig);
+  free(dest);
+  free(out_dist);
+  
+  
+  SET_VECTOR_ELT(ans, 0, ans0);
+  SET_VECTOR_ELT(ans, 1, ans1);
+  SET_VECTOR_ELT(ans, 2, ans2);
+  UNPROTECT(6);
+  return ans;
 }
 
 
-// [[Rcpp::export(rng = false)]]
-List do_which_within_within_1km(DoubleVector lat, DoubleVector lon) {
-  int N = lat.length();
-  std::vector<int> orig;
-  orig.reserve(N);
-  std::vector<int> dest;
-  dest.reserve(N);
-  
+
+SEXP do_which_within_within_1km(SEXP llat, SEXP llon) {
+  checkEquiRealReal(llat, llon, "lat", "lon");
+  const double * lat = REAL(llat);
+  const double * lon = REAL(llon);
+  int N = length(llat);
+  int * orig = malloc(sizeof(int) * N);
+  int * dest = malloc(sizeof(int) * N);
+  if (orig == NULL || dest == NULL) {
+    error("orig and dest could not be malloc"); // # nocov
+  }
+  R_xlen_t k = 0;
+  R_xlen_t oN = N;
   for (int i = 0; i < N; ++i) {
     double olat1 = lat[i];
     double olon1 = lon[i];
@@ -118,22 +159,42 @@ List do_which_within_within_1km(DoubleVector lat, DoubleVector lon) {
       }
       
       if (haversine_dist(olat1, olon1, olat2, olon2) < 1) {
-        orig.push_back(i + 1);
-        dest.push_back(j + 1);
+        orig[k] = i + 1;
+        dest[k] = j + 1;
+        ++k;
+        if ((k * 2) >= oN) {
+          oN *= 2;
+          orig = realloc(orig, sizeof(int) * oN);
+          dest = realloc(dest, sizeof(int) * oN);
+        }
+        
       }
     }
   }
+  SEXP ans = PROTECT(allocVector(VECSXP, 2));
+  SEXP ans1 = PROTECT(allocVector(INTSXP, k));
+  SEXP ans2 = PROTECT(allocVector(INTSXP, k));
+  SET_VECTOR_ELT(ans, 0, ans1);
+  SET_VECTOR_ELT(ans, 1, ans2);
+  UNPROTECT(3);
   
-  return List::create(Named("orig") = wrap(orig), Named("dest") = wrap(dest));
+  // return List::create(Named("orig") = wrap(orig), Named("dest") = wrap(dest));
+  return ans;
 }
 
-// [[Rcpp::export(rng = false)]]
-LogicalVector do_is_within(DoubleVector lat, DoubleVector lon, double r, bool debug = false) {
-  R_xlen_t N = lat.length();
+
+SEXP Cdo_is_within(SEXP llat, SEXP llon, SEXP rr) {
+  checkEquiRealReal(llat, llon, "lat", "lon");
+  R_xlen_t N = xlength(llat);
+  const double * lat = REAL(llat);
+  const double * lon = REAL(llon);
+  double r = asReal(rr);
   
-  verify_sorted2(N, lat, lon, 0);
+  verify_sorted2(N, llat, llon, 0);
   
-  LogicalVector out(N);
+  SEXP oout = PROTECT(allocVector(LGLSXP, N));
+  int * out = LOGICAL(oout);
+  memset(out, 0, sizeof(int) * N);
   
   double R = sin(r / (2 * EARTH_RADIUS_KM));
   R *= R;
@@ -167,26 +228,34 @@ LogicalVector do_is_within(DoubleVector lat, DoubleVector lon, double r, bool de
       }
     }
   }
-  return out;
+  UNPROTECT(1);
+  return oout;
 }
 
-void cap_at_2(unsigned char & x) {
-  x = (x > 1) ? 2 : 1;
+void cap_at_2(unsigned char * x) {
+  *x = (*x > 1) ? 2 : 1;
 }
 
-// [[Rcpp::export(rng = false)]]
-LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, double lambda0) {
-  R_xlen_t N = lat.length();
-  if (N != lon.length() || N <= 1 || N > INT_MAX) {
-    stop("Internal error(do_which_within): bad lengths.");
+SEXP is_within_pixels(SEXP llat, SEXP llon, SEXP rr, SEXP llambda0) {
+  checkEquiRealReal(llat, llon, "lat", "lon");
+  checkEquiRealReal(rr, llambda0, "r", "lambda0");
+  R_xlen_t N = xlength(llat);
+  if (N != xlength(llon) || N <= 1 || N > INT_MAX) {
+    error("Internal error(do_which_within): bad lengths.");
   }
-  verify_sorted2(N, lat, lon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
+  verify_sorted2(N, llat, llon, DO_WHICH_WITHIN_SORTED2_ERR_NO);
+  const double * lat = REAL(llat);
+  const double * lon = REAL(llon);
+  double r = asReal(rr);
+  double lambda0 = asReal(llambda0);
   if (r < 0.01) {
-    stop("r < 0.01 not supported.");
+    error("r < 0.01 not supported.");
   }
-  
-  DoubleVector x = no_init(N);
-  DoubleVector y = no_init(N);
+  int np = 0;
+  SEXP x = PROTECT(allocVector(REALSXP, N)); ++np;
+  SEXP y = PROTECT(allocVector(REALSXP, N)); ++np;
+  double * xp = REAL(x);
+  double * yp = REAL(y);
   double lambda_0 = lambda0 + 0.0;
   if (ISNAN(lambda0)) {
     lambda_0 = lon[0];
@@ -205,14 +274,14 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   
   for (R_xlen_t i = 0; i < N; ++i) {
     if (ISNAN(lat[i]) || ISNAN(lon[i])) {
-      x[i] = R_PosInf;
-      y[i] = R_NegInf;
+      xp[i] = R_PosInf;
+      yp[i] = R_NegInf;
       continue;
     }
-    y[i] = lat[i] * radf;
-    x[i] = (lon[i] - lambda_0) * radf;
-    double cos_phi = std::cos(y[i]);
-    x[i] *= cos_phi;
+    yp[i] = lat[i] * radf;
+    xp[i] = (lon[i] - lambda_0) * radf;
+    double cos_phi = cos(yp[i]);
+    xp[i] *= cos_phi;
   }
   
   double cart_r = r / EARTH_RADIUS_KM;
@@ -221,12 +290,12 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   
   // for engrid_1D -- want max/max < 1. 
   // Note that putting nextafter within engrid_1D will _double_ the runtime
-  cart_r = std::nextafter(cart_r / 2.0, R_PosInf); 
+  cart_r = nextafter(cart_r / 2.0, R_PosInf); 
   
-  double ymin = y[0];
-  double ymax = y[N - 1];
-  double xminmax[2] = {x[0], x[N - 1]};
-  aminmax1(xminmax, x, N);
+  double ymin = yp[0];
+  double ymax = yp[N - 1];
+  double xminmax[2] = {xp[0], xp[N - 1]};
+  aminmax1(xminmax, xp, N);
   double xmin = xminmax[0];
   double xmax = xminmax[1];
   
@@ -237,17 +306,22 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
   int max_gy = (int)dmax_gy; 
   
   R_xlen_t gg_N = max_gx * max_gy + max_gx + max_gy + 1;
-  std::vector<unsigned char> gg(gg_N);
-  std::fill(gg.begin(), gg.end(), 0);
-  
-  IntegerVector GX = no_init(N);
-  IntegerVector GY = no_init(N);
+  unsigned char * gg = calloc(gg_N, sizeof(char));
+  if (gg == NULL) {
+    free(gg);
+    UNPROTECT(np);
+    error("gg could not be calloc'd");
+  }
+  SEXP GGX = PROTECT(allocVector(INTSXP, N)); np++;
+  SEXP GGY = PROTECT(allocVector(INTSXP, N)); np++;
+  int * restrict GX = INTEGER(GGX);
+  int * restrict GY = INTEGER(GGY);
   
   // Count number of entries in a particular 'pixel'
   // if more than two then certainly not isolated
   for (R_xlen_t i = 0; i < N; ++i) {
-    double xi = x[i];
-    double yi = y[i];
+    double xi = xp[i];
+    double yi = yp[i];
     int gix = engrid_1D(xi, cart_r, xmin, xmax);
     int giy = engrid_1D(yi, cart_r, ymin, ymax);
     GX[i] = gix;
@@ -259,14 +333,15 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
     gg[ai] = (prev_ggai >= 1) ? 2 : 1;
   }
   
-  LogicalVector out(N);
-  
+  SEXP oout = PROTECT(allocVector(LGLSXP, N)); np++;
+  int * restrict out = INTEGER(oout);
+  memset(out, 0, sizeof(int) * N);
   for (R_xlen_t i = 0; i < N; ++i) {
     int gix = GX[i];
     int giy = GY[i];
     int ai = array2(gix, giy, max_gx, max_gy);
     if (gg[ai] >= 2) {
-      out[i] = TRUE;
+      out[i] = 1;
       // continue;  <-- not correct because the i'th
       //                point may have neighbours for
       //                whom i is the nearest point but 
@@ -284,8 +359,8 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
       
     }
     
-    double xi = x[i];
-    double yi = y[i];
+    double xi = xp[i];
+    double yi = yp[i];
     
     for (R_xlen_t j = (i + 1); j < N; ++j) {
       int gjx = GX[j];
@@ -301,24 +376,24 @@ LogicalVector is_within_pixels(DoubleVector lat, DoubleVector lon, double r, dou
         break;
       }
       
-      double xj = x[j];
-      double yj = y[j];
+      double xj = xp[j];
+      double yj = yp[j];
       double d2 = euclid_dist_sq(xi, yi, xj, yj);
       if (d2 < R2) {
-        out[i] = TRUE;
-        out[j] = TRUE;
+        out[i] = 1;
+        out[j] = 1;
       }
     }
   }
-  return out;
-  
+  free(gg);
+  UNPROTECT(np);
+  return oout;
 }
 
 
-R_xlen_t locate_in_sorted(int & xi, IntegerVector y, R_xlen_t a, R_xlen_t b, R_xlen_t & N) {
+R_xlen_t locate_in_sorted(int xi, const int * y, R_xlen_t a, R_xlen_t b, R_xlen_t N) {
   // return the 'best' guess for the location of xi in y, sorted ascending
   // i.e. y[out] = xi if xi in y and y[out] != xi otherwise.
-  
   if (xi <= y[a]) {
     return a;
   }
@@ -339,27 +414,18 @@ R_xlen_t locate_in_sorted(int & xi, IntegerVector y, R_xlen_t a, R_xlen_t b, R_x
   if (xi < m1) {
     return locate_in_sorted(xi, y, a, m1, N);
   }
-  // if (xi == y[m1]) {
-  //   return m1;
-  // }
   if (xi < m2) {
     return locate_in_sorted(xi, y, m1, m2, N);
   }
-  // if (xi == y[m2]) {
-  //   return m2;
-  // }
   if (xi < m3) {
     return locate_in_sorted(xi, y, m2, m3, N);
   }
-  // if (xi == y[m3]) {
-  //   return m3;
-  // }
   return locate_in_sorted(xi, y, m3, b, N);
 }
 
-// [[Rcpp::export(rng = false)]]
-R_xlen_t do_locate_in_sorted(int xi, IntegerVector y) {
-  R_xlen_t N = y.length();
+R_xlen_t do_locate_in_sorted(int xi, SEXP yy) {
+  R_xlen_t N = xlength(yy);
+  const int * y = INTEGER(yy);
   R_xlen_t a = 0; 
   R_xlen_t b = N - 1;
   if (a < 0 || b < a || b >= N || xi >= y[b]) {
@@ -368,10 +434,12 @@ R_xlen_t do_locate_in_sorted(int xi, IntegerVector y) {
   return locate_in_sorted(xi, y, a, b, N);
 }
 
-// [[Rcpp::export(rng = false)]]
-bool all_in_sorted(IntegerVector x, IntegerVector tbl) {
-  R_xlen_t N = x.length();
-  R_xlen_t tn = tbl.length();
+
+bool all_in_sorted(SEXP xx, SEXP ttbl) {
+  const int * x = INTEGER(xx);
+  const int * tbl = INTEGER(ttbl);
+  R_xlen_t N = xlength(xx);
+  R_xlen_t tn = xlength(ttbl);
   if (tn == 0) {
     return false;
   }
@@ -392,12 +460,13 @@ bool all_in_sorted(IntegerVector x, IntegerVector tbl) {
 #if false
 #include <omp.h>
 
-// [/[Rcpp::export(rng = false)]]
-IntegerVector all_integers(int nThread = 1) {
+
+SEXP Call_integers(SEXP nthreads) {
+  int nThread = asInteger(nthreads)
   IntegerVector out = no_init(4294967296);
 #pragma omp parallel for num_threads(nThread)
   for (unsigned int i = 0; i < 4294967295; ++i) {
-    int outi = static_cast<int>(i);
+    int outi = (i);
     out[i] = outi;
   }
   out[4294967295] = -1;

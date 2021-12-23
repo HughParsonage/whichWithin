@@ -104,7 +104,7 @@ test_that("is_within_pixels coverage", {
   # Want to test coinciding counts
   lat <- rep(seq(-36, -35.6, length.out = 101), each = 3)
   lon <- rep(seq(140, 140.1, length.out = 101), each = 3)
-  expect_true(all(is_within_pixels(lat, lon, 2, 140)))
+  expect_true(all(.Call("is_within_pixels", lat, lon, 2, 140, PACKAGE = "whichWithin")))
   
   
 })

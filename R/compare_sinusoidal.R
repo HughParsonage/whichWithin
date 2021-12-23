@@ -50,4 +50,8 @@ print.small_data_table <- function(x, ...) {
   print(x, topn = 2)
 }
 
+dist_sinusoidal <- function(lat1, lon1, lat2, lon2, lambda0 = NA_real_) {
+  .Call("Cdist_sinusoidal", lat1, lon1, lat2, lon2, lambda0, PACKAGE = "whichWithin")
+}
+
 

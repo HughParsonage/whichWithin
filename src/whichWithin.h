@@ -13,12 +13,12 @@
 #include <math.h>
 #include <ctype.h>
 
-const int GG_RES = 2076;
+#define GG_RES 2076;
 
-void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N);
-void aminmax1(double ans[2], SEXP x, R_xlen_t N);
+void aminmax_dbl(double ans[4], const double * x, const double * y, R_xlen_t N);
+void aminmax1(double ans[2], const double * x, R_xlen_t N);
 void vmaxmin(SEXP x, int * xmax, int * xmin);
-void sinusoidal(R_xlen_t N, SEXP x, SEXP y, SEXP lat, SEXP lon, double lambda0);
+void sinusoidal(R_xlen_t N, double * x, double * y, const double * lat, const double * lon, double lambda0);
 double euclid_dist_sq(double x1, double y1, double x2, double y2);
 double euclid_dist(double x1, double y1, double x2, double y2);
 double haversine_dist(double olat1, double olon1, double olat2, double olon2);
@@ -29,11 +29,14 @@ bool within_one_1km_aus(double olat1, double olon1, double olat2, double olon2);
 
 void verify_sorted2(R_xlen_t N, SEXP x, SEXP y, int err_no);
 
-const int INGRID_SORTED2_ERR_NO = 11;
-const int DO_WHICH_WITHIN_SORTED2_ERR_NO = 12;
+#define INGRID_SORTED2_ERR_NO 11
+#define DO_WHICH_WITHIN_SORTED2_ERR_NO 12
 
 // const double EARTH_RADIUS_KM = 6378.137;
-const double EARTH_RADIUS_KM = 6371.0;
+#define EARTH_RADIUS_KM 6371.0
+
+// isntEqui
+void checkEquiRealReal(SEXP x, SEXP y, const char * nx, const char * ny);
 
 
 

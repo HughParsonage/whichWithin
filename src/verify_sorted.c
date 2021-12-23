@@ -1,6 +1,8 @@
 #include "whichWithin.h"
 
-void verify_sorted2(R_xlen_t N, DoubleVector x, DoubleVector y, int err_no) {
+void verify_sorted2(R_xlen_t N, SEXP xx, SEXP yy, int err_no) {
+  const double * x = REAL(xx);
+  const double * y = REAL(yy);
   bool isnt_sorted2 = false;
   for (R_xlen_t i = 1; i < N; ++i) {
     double x0 = x[i - 1];
@@ -14,7 +16,6 @@ void verify_sorted2(R_xlen_t N, DoubleVector x, DoubleVector y, int err_no) {
   }
   
   if (isnt_sorted2) {
-    Rcerr << "Error #" << err_no << " ";
-    stop("Internal error: wasn't sorted in x, y.");
+    error("Error #%d, Internal error: wasn't sorted in x, y.", err_no);
   }
 }
