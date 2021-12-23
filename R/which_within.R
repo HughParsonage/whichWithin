@@ -69,8 +69,10 @@ which_within <- function(lat, lon,
     stop("lat,lon not sorted.")
   }
   
-  out <- do_which_within(lat, lon, r = r, lambda0 = lambda0,
-                         incl_distance = isTRUE(incl_dist))
+  out <- .Call("do_which_within",
+               lat, lon, r = r, lambda0 = lambda0,
+               incl_distance = isTRUE(incl_dist),
+               PACKAGE = "whichWithin")
   
   if (!isTRUE(incl_dist)) {
     out <- out[1:2]
@@ -80,6 +82,7 @@ which_within <- function(lat, lon,
   }
   
   setDT(out)
+  setnames(out, 1:2, c("orig", "dest"))
   setattr(out, "sorted", c("orig", "dest"))
   if (!is.null(id)) {
     orig <- .subset2(out, "orig")
@@ -117,5 +120,7 @@ which_within_cj <- function(lat, lon, radius = "1 km",
   CJ12[d < r, .SD, .SDcols = c("orig", "dest")]
 }
 
-
+do_is_within <- function(lat, lon, r) {
+  .Call("Cdo_is_within", lat, lon, r, PACKAGE = "whichWithin")
+}
 

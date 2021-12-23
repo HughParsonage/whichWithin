@@ -1,14 +1,14 @@
 #include "whichWithin.h"
 
-static void avg_lambda(double & lambda0, DoubleVector lon, R_xlen_t N) {
-  if (ISNAN(lambda0)) {
-    lambda0 = lon[N / 2];
-    if (ISNAN(lambda0)) {
+static void avg_lambda(double * lambda0, const double * lon, R_xlen_t N) {
+  if (ISNAN(*lambda0)) {
+    *lambda0 = lon[N / 2];
+    if (ISNAN(*lambda0)) {
       double s = lon[0];
       for (R_xlen_t i = 1; i < N; ++i) {
         s += lon[i];
       }
-      lambda0 = s / ((double)N);
+      *lambda0 = s / ((double)N);
     }
   }
 }
@@ -23,7 +23,7 @@ void sinusoidal(R_xlen_t N,
   
   // choose the middle lambda (hopefully the median)
   // or one provided by the user
-  avg_lambda(lambda_0, lon, N);
+  avg_lambda(&lambda_0, lon, N);
   
   for (R_xlen_t i = 0; i < N; ++i) {
     if (ISNAN(lat[i]) || ISNAN(lon[i])) {
@@ -33,7 +33,7 @@ void sinusoidal(R_xlen_t N,
     }
     y[i] = lat[i] * radf;
     x[i] = (lon[i] - lambda_0) * radf;
-    double cos_phi = std::cos(y[i]);
+    double cos_phi = cos(y[i]);
     x[i] *= cos_phi;
   }
 }
@@ -41,7 +41,7 @@ void sinusoidal(R_xlen_t N,
 
 
 
-SEXP Sinusoidal(SEXP llat, SEXP llon, SEXP llambda0) {
+SEXP CSinusoidal(SEXP llat, SEXP llon, SEXP llambda0) {
   if (!isReal(llat) || !isReal(llon) || !isReal(llambda0)) {
     error("Internal error (Sinusoidal): wrong types."); // # nocov
   }
@@ -66,7 +66,7 @@ SEXP Sinusoidal(SEXP llat, SEXP llon, SEXP llambda0) {
     }
     y[i] = lat[i] * radf;
     x[i] = (lon[i] - lambda_0) * radf;
-    double cos_phi = std::cos(y[i]);
+    double cos_phi = cos(y[i]);
     x[i] *= cos_phi;
   }
   SEXP ans = PROTECT(allocVector(VECSXP, 2));
@@ -106,7 +106,6 @@ SEXP Cdist_sinusoidal(SEXP llat1,
   double * y1 = REAL(yy1);
   double * y2 = REAL(yy2);
   
-  
   double radf = M_PI / 180.0;
   double lambda_0 = ISNAN(lambda0) ? lon1[N / 2] : lambda0; 
   
@@ -115,8 +114,8 @@ SEXP Cdist_sinusoidal(SEXP llat1,
     y2[i] = lat2[i] * radf;
     x1[i] = (lon1[i] - lambda_0) * radf;
     x2[i] = (lon2[i] - lambda_0) * radf;
-    double cos_phi1 = std::cos(y1[i]);
-    double cos_phi2 = std::cos(y2[i]);
+    double cos_phi1 = cos(y1[i]);
+    double cos_phi2 = cos(y2[i]);
     x1[i] *= cos_phi1;
     x2[i] *= cos_phi2;
   }

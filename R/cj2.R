@@ -18,7 +18,7 @@ cj2 <- function(u, v,
   stopifnot(length(u) == length(v), 
             is.numeric(u), is.numeric(v),
             length(new_cols) == 6)
-  ans <- Z4P(u, v, nThread)
+  ans <- .Call("Z4P", u, v, nThread, PACKAGE = "whichWithin")
   if (as_data_table) {
     setDT(ans)
     setnames(ans, new_cols)

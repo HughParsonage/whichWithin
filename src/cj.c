@@ -25,7 +25,8 @@ R_xlen_t sum_n_le2(R_xlen_t N) {
   return (N * (N - 1)) / 2;
 }
 
-SEXP test_sum_identities(int k = 50, int j = 2, int N = 100) {
+SEXP Ctest_sum_identities(SEXP kk, SEXP jj, SEXP NN) {
+  int k = asInteger(kk),  j = asInteger(jj), N = asInteger(NN);
   SEXP oout = allocVector(INTSXP, 4);
   int * out = INTEGER(oout);
   out[0] = sum_first_k(k);
@@ -52,7 +53,7 @@ SEXP Z4(SEXP xx, SEXP yy) {
   SEXP llon2 = PROTECT(allocVector(REALSXP, N));
   
   int * restrict id1 = INTEGER(iid1);
-  int * restrict id1 = INTEGER(iid2);
+  int * restrict id2 = INTEGER(iid2);
   double * restrict lat1 = REAL(llat1);
   double * restrict lat2 = REAL(llat2);
   double * restrict lon1 = REAL(llon1);
@@ -70,18 +71,18 @@ SEXP Z4(SEXP xx, SEXP yy) {
     }
   }
   SEXP ans = PROTECT(allocVector(VECSXP, 6));
-  SET_VECTOR_ELT(ans, 0, id1);
-  SET_VECTOR_ELT(ans, 1, id2);
-  SET_VECTOR_ELT(ans, 2, lat1);
-  SET_VECTOR_ELT(ans, 3, lon1);
-  SET_VECTOR_ELT(ans, 4, lat2);
-  SET_VECTOR_ELT(ans, 5, lon2);
+  SET_VECTOR_ELT(ans, 0, iid1);
+  SET_VECTOR_ELT(ans, 1, iid2);
+  SET_VECTOR_ELT(ans, 2, llat1);
+  SET_VECTOR_ELT(ans, 3, llon1);
+  SET_VECTOR_ELT(ans, 4, llat2);
+  SET_VECTOR_ELT(ans, 5, llon2);
   UNPROTECT(7);
   return ans;
 }
 
-// [[Rcpp::export(rng = false)]]
-List Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
+
+SEXP Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
   int nThread = asInteger(nthreads);
   if (!isReal(xx) || !isReal(yy)) {
     error("xx and yy must be REALSXP."); // # nocov
@@ -98,7 +99,7 @@ List Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
   SEXP llon2 = PROTECT(allocVector(REALSXP, N));
   
   int * restrict id1 = INTEGER(iid1);
-  int * restrict id1 = INTEGER(iid2);
+  int * restrict id2 = INTEGER(iid2);
   double * restrict lat1 = REAL(llat1);
   double * restrict lat2 = REAL(llat2);
   double * restrict lon1 = REAL(llon1);
@@ -106,7 +107,7 @@ List Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
   
   R_xlen_t k = 0;
 #if defined _OPENMP && _OPENMP >= 201511
-#pragma omp parallel for num_htreads(nThread)
+#pragma omp parallel for num_threads(nThread)
 #endif
   for (R_xlen_t i = 0; i < n; ++i) {
     for (R_xlen_t j = i + 1; j < n; ++j, ++k) {
@@ -119,12 +120,12 @@ List Z4P(SEXP xx, SEXP yy, SEXP nthreads) {
     }
   }
   SEXP ans = PROTECT(allocVector(VECSXP, 6));
-  SET_VECTOR_ELT(ans, 0, id1);
-  SET_VECTOR_ELT(ans, 1, id2);
-  SET_VECTOR_ELT(ans, 2, lat1);
-  SET_VECTOR_ELT(ans, 3, lon1);
-  SET_VECTOR_ELT(ans, 4, lat2);
-  SET_VECTOR_ELT(ans, 5, lon2);
+  SET_VECTOR_ELT(ans, 0, iid1);
+  SET_VECTOR_ELT(ans, 1, iid2);
+  SET_VECTOR_ELT(ans, 2, llat1);
+  SET_VECTOR_ELT(ans, 3, llon1);
+  SET_VECTOR_ELT(ans, 4, llat2);
+  SET_VECTOR_ELT(ans, 5, llon2);
   UNPROTECT(7);
   return ans;
 }

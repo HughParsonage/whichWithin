@@ -1,34 +1,25 @@
 #include "whichWithin.h"
 
-void vmin(double & xmin, double xi) {
-  if (xi < xmin) {
-    xmin = xi;
+void dvmin(double * xmin, double xi) {
+  if (xi < *xmin) {
+    *xmin = xi;
   }
 }
-void vmax(double & xmax, double xi) {
-  if (xi > xmax) {
-    xmax = xi;
-  }
-}
-
-void vmin(int & xmax, int xi) {
-  if (xi < xmax) {
-    xmax = xi;
+void dvmax(double * xmax, double xi) {
+  if (xi > *xmax) {
+    *xmax = xi;
   }
 }
 
-void vmax(int & xmax, int xi) {
-  if (xi > xmax) {
-    xmax = xi;
+void ivmin(int * xmax, int xi) {
+  if (xi < *xmax) {
+    *xmax = xi;
   }
 }
 
-void vmaxmin(IntegerVector x, int & xmax, int & xmin) {
-  R_xlen_t N = x.length();
-  for (R_xlen_t i = 0; i < N; ++i) {
-    int xi = x[i];
-    vmax(xmax, xi);
-    vmin(xmin, xi);
+void ivmax(int * xmax, int xi) {
+  if (xi > *xmax) {
+    *xmax = xi;
   }
 }
 
@@ -36,7 +27,7 @@ void vmaxmin(IntegerVector x, int & xmax, int & xmin) {
 
 
 
-void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N) {
+void aminmax_dbl(double ans[4], const double * x, const double * y, R_xlen_t N) {
   double xmin = ans[0];
   double xmax = ans[1];
   double ymin = ans[2];
@@ -52,10 +43,10 @@ void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N) {
   
   for (R_xlen_t i = 0; i < N; ++i) {
     double xi = x[i], yi = y[i];
-    vmin(xmin, xi);
-    vmin(ymin, yi);
-    vmax(xmax, xi);
-    vmax(ymax, yi);
+    dvmin(&xmin, xi);
+    dvmin(&ymin, yi);
+    dvmax(&xmax, xi);
+    dvmax(&ymax, yi);
   }
   ans[0] = xmin;
   ans[1] = xmax;
@@ -63,25 +54,26 @@ void aminmax_dbl(double ans[4], double * x, double * y, R_xlen_t N) {
   ans[3] = ymax;
 }
 
-void aminmax1(double ans[2], DoubleVector x, R_xlen_t N) {
+void aminmax1(double ans[2], const double * x, R_xlen_t N) {
   double xmin = x[0];
   double xmax = x[0];
   for (R_xlen_t i = 1; i < N; ++i) {
     double xi = x[i];
-    vmin(xmin, xi);
-    vmax(xmax, xi);
+    dvmin(&xmin, xi);
+    dvmax(&xmax, xi);
   }
   ans[0] = xmin;
   ans[1] = xmax;
 }
 
-// [[Rcpp::export(rng = false)]]
-DoubleVector do_minmax(DoubleVector x, DoubleVector y) {
+SEXP Cdo_minmax(SEXP xx, SEXP yy) {
   double ans[4] = {1, -1, 1, -1};
-  aminmax_dbl(ans, x, y);
-  DoubleVector out = no_init(4);
+  const double * x = REAL(xx);
+  const double * y = REAL(yy);
+  aminmax_dbl(ans, x, y, xlength(xx));
+  SEXP out = allocVector(REALSXP, 4);
   for (int i = 0; i < 4; ++i) {
-    out[i] = ans[i];
+    REAL(out)[i] = ans[i];
   }
   return out;
 }

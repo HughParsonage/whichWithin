@@ -60,7 +60,7 @@ are_within <- function(lat, lon, radius = "1 km", lambda0 = NULL,
     lambda0 <- lon[length(lat) %/% 2]
   }
   
-  ans <- is_within_pixels(lat, lon, r, lambda0)
+  ans <- .Call("is_within_pixels", lat, lon, r, lambda0, PACKAGE = "whichWithin")
   if (length(na_indices)) {
     ans[na_indices] <- na
   }
@@ -179,7 +179,7 @@ are_within_for <- function(lat, lon, radius = "1 km", lambda0 = NULL,
         out[j] <- na
         next
       }
-      if (haversine_dist(lat[i], lon[i], lat[j], lon[j]) < r) {
+      if (haversine_distance(lat[i], lon[i], lat[j], lon[j]) < r) {
         out[i] <- TRUE
         out[j] <- TRUE
       }

@@ -1,37 +1,45 @@
-#include <Rcpp.h>
-using namespace Rcpp;
+#include "whichWithin.h"
 
-// [[Rcpp::export(rng = false)]]
-LogicalVector is_sorted2(DoubleVector x, DoubleVector y, LogicalVector s2) {
-  R_xlen_t N = x.length();
-  if (s2.length() == 1) {
-    if (s2[0] != NA_LOGICAL) {
-      return s2;
+SEXP Cis_sorted2(SEXP xx, SEXP yy, SEXP ss2) {
+  if (!isReal(xx) || !isReal(yy) || !isLogical(ss2)) {
+    error("(Cis_sorted2): wrong types."); // # nocov
+  }
+  if (xlength(xx) != xlength(yy)) {
+    error("(Cis_sorted2): lengths differ."); // # nocov
+  }
+  R_xlen_t N = xlength(xx);
+  const double * x = REAL(xx);
+  const double * y = REAL(yy);
+  if (xlength(ss2) == 1) {
+    if (LOGICAL(ss2)[0] != NA_LOGICAL) {
+      return ss2;
     }
-    LogicalVector out(1);
+    
     for (R_xlen_t i = 1; i < N; ++i) {
       if (x[i - 1] > x[i]) {
-        return out;
+        return ScalarLogical(0);
       }
     }
-    out[0] = TRUE;
-    return out;
+    return ScalarLogical(1);
   }
-  LogicalVector out(2);
-  if (s2.length() != 2) {
-    return out;
+  if (LOGICAL(ss2)[0] != NA_LOGICAL && LOGICAL(ss2)[1] != NA_LOGICAL) {
+    return ss2;
   }
-  if (s2[0] != NA_LOGICAL && s2[1] != NA_LOGICAL) {
-    return s2;
+  SEXP out = PROTECT(allocVector(LGLSXP, 2));
+  LOGICAL(out)[0] = 0;
+  LOGICAL(out)[1] = 0;
+  if (xlength(ss2) != 2) {
+    UNPROTECT(1);
+    return out;
   }
   bool y_not_sorted = false;
-  
   for (R_xlen_t i = 1; i < N; ++i) {
     double di = x[i] - x[i - 1];
     if (di > 0) {
       continue;
     }
     if (di < 0) {
+      UNPROTECT(1);
       return out;
     }
     if (y_not_sorted) {
@@ -42,7 +50,8 @@ LogicalVector is_sorted2(DoubleVector x, DoubleVector y, LogicalVector s2) {
     }
     
   }
-  out[0] = TRUE;
-  out[1] = !y_not_sorted;
+  LOGICAL(out)[0] = 1;
+  LOGICAL(out)[1] = !y_not_sorted;
+  UNPROTECT(1);
   return out;
 }
