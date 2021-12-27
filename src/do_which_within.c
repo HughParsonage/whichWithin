@@ -33,10 +33,11 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
   
   double cart_r = r / EARTH_RADIUS_KM;
   
-  R_xlen_t oN = 0, oM = N;
-  int * orig = malloc(sizeof(int) * N);
-  int * dest = malloc(sizeof(int) * N);
-  double * out_dist = malloc(sizeof(double) * (incl_distance ? N : 1));
+  R_xlen_t oN = 0;
+  uint64_t oM = N * 40; // # by observation
+  int * orig = malloc(sizeof(int) * oM);
+  int * dest = malloc(sizeof(int) * oM);
+  double * out_dist = malloc(sizeof(double) * (incl_distance ? oM : 1));
   if (orig == NULL || dest == NULL || out_dist == NULL) {
     UNPROTECT(2);
     free(orig);
@@ -60,7 +61,13 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
   
   for (R_xlen_t i = 0; i < N - 1; ++i) {
     if ((oN + N) >= oM) {
-      oM += N + 1;
+      Rprintf(".");
+      // Originally this was oM += N  but this was poor
+      // 11s for 200,000 vs 4.6s for Rcpp push_back.
+      // After this was changed to *= 1.62, inspired by
+      // https://stackoverflow.com/questions/1100311/what-is-the-ideal-growth-rate-for-a-dynamically-allocated-array
+      // we had similar performance 4.5s
+      oM += (oM >> 1) + (oM >> 3); // * ~1.62 
       orig = realloc(orig, sizeof(int) * oM);
       dest = realloc(dest, sizeof(int) * oM);
       if (incl_distance) {
