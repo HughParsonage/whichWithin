@@ -19,3 +19,16 @@ void verify_sorted2(R_xlen_t N, SEXP xx, SEXP yy, int err_no) {
     error("Error #%d, Internal error: wasn't sorted in x, y.", err_no);
   }
 }
+
+
+void verify_sorted_int(R_xlen_t N, const int * xp, const char * nx) {
+  if (N <= 1) {
+    return;
+  }
+  for (R_xlen_t i = 1; i < N; ++i) {
+    if (xp[i - 1] > xp[i]) {
+      error("`%s` was sorted at position, i = %lld", nx, i);
+    }
+  }
+  
+}

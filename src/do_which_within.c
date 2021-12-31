@@ -34,7 +34,7 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
   double cart_r = r / EARTH_RADIUS_KM;
   
   R_xlen_t oN = 0;
-  uint64_t oM = N * 40; // # by observation
+  uint64_t oM = N * 200; // # by observation
   int * orig = malloc(sizeof(int) * oM);
   int * dest = malloc(sizeof(int) * oM);
   double * out_dist = malloc(sizeof(double) * (incl_distance ? oM : 1));
@@ -61,7 +61,6 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
   
   for (R_xlen_t i = 0; i < N - 1; ++i) {
     if ((oN + N) >= oM) {
-      Rprintf(".");
       // Originally this was oM += N  but this was poor
       // 11s for 200,000 vs 4.6s for Rcpp push_back.
       // After this was changed to *= 1.62, inspired by
@@ -72,6 +71,12 @@ SEXP do_which_within(SEXP llat, SEXP llon, SEXP rr,
       dest = realloc(dest, sizeof(int) * oM);
       if (incl_distance) {
         out_dist = realloc(out_dist, sizeof(double) * oM);
+      }
+      if (orig == NULL || dest == NULL || out_dist == NULL) {
+        free(orig);
+        free(dest);
+        free(out_dist);
+        error("Unable to realloc %" PRIu64" bytes", oM); // # nocov
       }
     }
     double xi = xp[i];

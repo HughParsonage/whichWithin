@@ -1,5 +1,60 @@
 #include "whichWithin.h"
 
+bool is_sorted(SEXP x) {
+  R_xlen_t N = xlength(x);
+  if (N <= 1) {
+    return true;
+  }
+  switch(TYPEOF(x)) {
+  case INTSXP: {
+    const int * xp = INTEGER(x);
+    int a = xp[0];
+    int b = xp[N - 1];
+    if (a == b) {
+      return true;
+    }
+    if (a < b) {
+    for (R_xlen_t i = 1; i < N; ++i) {
+      if (xp[i - 1] > xp[i]) {
+        return false;
+      }
+    }
+    } else {
+      for (R_xlen_t i = 1; i < N; ++i) {
+        if (xp[i - 1] < xp[i]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+    break;
+  case REALSXP: {
+    const double * xp = REAL(x);
+    double a = xp[0];
+    double b = xp[N - 1];
+    if (a == b) {
+      return true;
+    }
+    if (a < b) {
+      for (R_xlen_t i = 1; i < N; ++i) {
+        if (xp[i - 1] > xp[i]) {
+          return false;
+        }
+      }
+    } else {
+      for (R_xlen_t i = 1; i < N; ++i) {
+        if (xp[i - 1] < xp[i]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  }
+  return false;
+}
+
 SEXP Cis_sorted2(SEXP xx, SEXP yy, SEXP ss2) {
   if (!isReal(xx) || !isReal(yy) || !isLogical(ss2)) {
     error("(Cis_sorted2): wrong types."); // # nocov

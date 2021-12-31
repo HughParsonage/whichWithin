@@ -1,5 +1,12 @@
 #include "whichWithin.h"
 
+int imax(int a, int b) {
+  return a > b ? a : b;
+}
+int imin(int a, int b) {
+  return a < b ? a : b;
+}
+
 void dvmin(double * xmin, double xi) {
   if (xi < *xmin) {
     *xmin = xi;
@@ -20,6 +27,17 @@ void ivmin(int * xmax, int xi) {
 void ivmax(int * xmax, int xi) {
   if (xi > *xmax) {
     *xmax = xi;
+  }
+}
+
+void vminmaxi(int ans[2], const int * xp, R_xlen_t N) {
+  if (N == 0) {
+    return;
+  }
+  ans[0] = xp[0], ans[1] = xp[0];
+  for (R_xlen_t i = 1; i < N; ++i) {
+    ans[0] = xp[i] < ans[0] ? xp[i] : ans[0];
+    ans[1] = xp[i] < ans[1] ? xp[i] : ans[1];
   }
 }
 

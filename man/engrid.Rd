@@ -12,5 +12,6 @@ engrid(x, y, r)
 \item{r}{Radius of each cell in the grid.}
 }
 \description{
-Engrid
+Create a grid of radius \code{r} over the range of \code{x, y},
+index them and return the gridpoint of each point.
 }

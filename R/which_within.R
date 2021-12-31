@@ -124,3 +124,78 @@ do_is_within <- function(lat, lon, r) {
   .Call("Cdo_is_within", lat, lon, r, PACKAGE = "whichWithin")
 }
 
+which_within1d <- function(x, r, ion = 100) {
+  # ion is the guess for allocation
+  ans <- .Call("Cwhich_within1d_R", x, r, ion, PACKAGE = "whichWithin")
+  if (!is.atomic(ans) &&
+      requireNamespace("data.table", quietly = TRUE) &&
+      length(.subset2(ans, 1L)) < .Machine$integer.max) {
+    setDT(ans)
+  }
+  ans[]
+}
+
+
+approx_dvr_matches <- function(xCaseNumber, 
+                               Locations, 
+                               SearchResult, 
+                               Data = NULL,
+                               distance = 100, 
+                               duration = 3600) {
+  if (is.null(Data)) {
+    stopifnot(is.data.table(Locations),
+              is.data.table(SearchResult),
+              is.integer(xCaseNumber),
+              hasName(Locations, "BrpLocationId"),
+              hasName(Locations, "Latitude"),
+              hasName(Locations, "Longitude"),
+              hasName(SearchResult, "BrpLocationId"),
+              hasName(SearchResult, "VisitDateTime"),
+              hasName(SearchResult, "CaseNumber"),
+              hutilscpp::is_sorted(xCaseNumber))
+    if (!hasName(SearchResult, "lat")) {
+      SearchResult[Locations, c("lat", "lon") := list(i.Latitude, i.Longitude), on = "BrpLocationId"]
+    }
+    if (anyNA(.subset2(SearchResult, "lat"))) {
+      SearchResult <- SearchResult[!is.na(lat)]
+    }
+    lat <- .subset2(SearchResult, "lat")
+    lon <- .subset2(SearchResult, "lon")
+    CaseNumber <- .subset2(SearchResult, "CaseNumber") 
+    VisitDateTime <- .subset2(SearchResult, "VisitDateTime")
+    if (!is.integer(VisitDateTime)) {
+      if (is.character(VisitDateTime)) {
+        VisitDateTime <- dhhs:::yyyymmdd_HHMMSS_UTC(VisitDateTime)
+      } else {
+        warning("Interpreting VisitDateTime as POSIXct UTC")
+        VisitDateTime <- as.integer(VisitDateTime)
+      }
+    }
+  } else {
+    stopifnot(haskey(Data),
+              identical(key(Data)[1:2], c("lat", "lon")))
+    CaseNumber <- .subset2(Data, "CaseNumber")
+    lat <- .subset2(Data, "lat")
+    lon <- .subset2(Data, "lon")
+    VisitDateTime <- .subset2(Data, "VisitDateTime")
+    stopifnot(is.double(lat), is.double(lon),
+              is.integer(CaseNumber),
+              is.integer(VisitDateTime))
+  }
+  ans <- .Call("Capprox_dvr_matches",
+               xCaseNumber,
+               as.double(distance),
+               as.double(duration),
+               CaseNumber,
+               lat, lon,
+               VisitDateTime, 
+               PACKAGE = "whichWithin")
+  
+  names(ans) <- c("orig", "dest")
+  if (max(lengths(ans)) <= .Machine$integer.max) {
+    setDT(ans)
+  }
+  ans
+}
+
+
