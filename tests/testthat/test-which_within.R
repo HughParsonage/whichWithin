@@ -61,3 +61,16 @@ test_that("id column", {
   
 })
 
+test_that("which_within2", {
+  library(data.table)
+  DT <- data.table(lat = -runif(101, 37, 37.1), 
+                   lon = runif(101, 144, 146),
+                   VisitDateTime = rpois(101, 1),
+                   CaseNumber = 1:101,
+                   key = "lat,lon")
+  
+  
+})
+
+
+
