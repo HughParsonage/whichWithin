@@ -15,7 +15,6 @@
 #include <ctype.h>
 
 
-
 #define GG_RES 2076;
 int imin(int a, int b);
 int imax(int a, int b);

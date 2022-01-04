@@ -6,6 +6,7 @@
 #' @importFrom hutils AND
 #' @importFrom hutils OR
 #' @importFrom hutils haversine_distance
+#' @importFrom hutilscpp and3s
 #' @importFrom hutilscpp isntSorted
 #' @importFrom magrittr %>%
 #' @importFrom magrittr and
