@@ -65,11 +65,25 @@ test_that("which_within2", {
   library(data.table)
   DT <- data.table(lat = -runif(101, 37, 37.1), 
                    lon = runif(101, 144, 146),
-                   VisitDateTime = rpois(101, 1),
+                   VisitDateTime = as.integer(runif(101, 10, 401)),
                    CaseNumber = 1:101,
                    key = "lat,lon")
+  DT <- data.table(lat = seq(-35, -34, length.out = 101),
+                   lon = 150,
+                   VisitDateTime = as.integer(runif(101, 10, 401)),
+                   CaseNumber = 1:101,
+                   key = "lat,lon")
+  DT[, i := .I]
+  DT[, j := .I]
+  Cj <- DT[DT, on = .(i > i), nomatch = 0L]
+  Cj[, dist := hutils::haversine_distance(lat, lon, i.lat, i.lon)]
+  Cj[, dist_y := abs(lat - i.lat)]
+  Cj[, dist_x := abs(lon - i.lon)]
+  Cj[, dura := VisitDateTime - i.VisitDateTime]
+  setkey(Cj, lat, lon)
   
-  
+  wj <- whichWithin:::approx_dvr_matches(1:100, distance = 1, duration = 1,
+                                         Data = Cj)
 })
 
 
