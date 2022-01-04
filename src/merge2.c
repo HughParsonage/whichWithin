@@ -396,7 +396,6 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     unsigned int vdti = vdt[i];
     unsigned int vdt_lhs = vdti - r_t;
     
-    
     bool location_match = false;
     if (lat[i + 1] == lati &&
         lon[i + 1] == loni) {
@@ -445,7 +444,6 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
         break;
       }
       if (fabs(lonj - loni) <= rx) {
-        
         int vdtj = vdt[j];
         int dtij = (vdti < vdtj) ? (vdtj - vdti) : (vdti - vdtj);
         // if (i >= 4544830 && i <= 4544832) Rprintf("%d,", dtij);
