@@ -1,0 +1,42 @@
+\documentclass[b5paper,10pt]{scrartcl}
+\usepackage{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\newcolumntype{R}{>{\raggedleft\arraybackslash $}X<$}
+
+%$
+
+\title{Geotemporal Self-joining}
+\author{Hugh Parsonage}
+
+\begin{document}
+\maketitle
+
+\section{Data}
+We start with a dataset of geotemporal points:
+
+\begin{table}[H]
+\caption{Original data}
+\begin{tabularx}{0.565\linewidth}{lRRR}
+\toprule
+\textbf{Idx} & \textbf{lat} & \textbf{lon} & \textbf{time} \\
+\midrule
+1            & -37.001      & 150.001      & 1639582230 \\
+2            & -37.001      & 150.001      & 1639582230 \\
+3            & -37.001      & 150.001      & 1639584611 \\
+4            & -37.001      & 150.003      & 1639582230 \\
+$\vdots$     & $\vdots$     & $\vdots$     & $\vdots$ \\
+$N$          & -35.999      & 155.953      & 1638840278 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Then we seek the unique self-join of the geospatial coordinates 
+and the self-join of time.
+
+
+\end{document}
+
