@@ -63,6 +63,7 @@ test_that("id column", {
 
 test_that("which_within2", {
   library(data.table)
+  library(hutilscpp)
   DT <- data.table(lat = -runif(101, 37, 37.1), 
                    lon = runif(101, 144, 146),
                    VisitDateTime = as.integer(runif(101, 10, 401)),
@@ -79,11 +80,14 @@ test_that("which_within2", {
   Cj[, dist := hutils::haversine_distance(lat, lon, i.lat, i.lon)]
   Cj[, dist_y := abs(lat - i.lat)]
   Cj[, dist_x := abs(lon - i.lon)]
-  Cj[, dura := VisitDateTime - i.VisitDateTime]
+  Cj[, dura := abs(VisitDateTime - i.VisitDateTime)]
   setkey(Cj, lat, lon)
   
-  wj <- whichWithin:::approx_dvr_matches(1:100, distance = 1, duration = 1,
-                                         Data = Cj)
+  n <- Cj[, sum_and3s(dist_y <= (0.000009007702 * 10000), dist_x <= 0.000011352150 * 10000, dura <= 1)]
+  
+  wj <- whichWithin:::approx_dvr_matches(1:100, distance = 10000, duration = 1,
+                                         Data = DT)
+  expect_equal(n, nrow(wj))
 })
 
 
