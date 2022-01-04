@@ -88,6 +88,12 @@ test_that("which_within2", {
   wj <- whichWithin:::approx_dvr_matches(1:100, distance = 10000, duration = 1,
                                          Data = DT)
   expect_equal(n, nrow(wj))
+  
+  n <- Cj[, sum_and3s(dist_y <= (0.000009007702 * 10000), dist_x <= 0.000011352150 * 10000, dura <= 2)]
+  
+  wj <- whichWithin:::approx_dvr_matches(1:101, distance = 10000, duration = 2,
+                                         Data = DT)
+  expect_equal(n, nrow(wj))
 })
 
 
