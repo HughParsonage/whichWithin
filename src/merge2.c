@@ -319,6 +319,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
                          SEXP CaseNumber, 
                          SEXP Lat, SEXP Lon,
                          SEXP VisitDateTime,
+                         SEXP Option,
                          SEXP Ion) {
   const double r_d = asReal(Distance);
   const unsigned int r_t = asInteger(Duration);
