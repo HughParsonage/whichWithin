@@ -141,7 +141,8 @@ approx_dvr_matches <- function(xCaseNumber,
                                SearchResult, 
                                Data = NULL,
                                distance = 100, 
-                               duration = 3600) {
+                               duration = 3600,
+                               Ion = getOption("whichWithin.Ion", 10)) {
   if (is.null(Data)) {
     stopifnot(is.data.table(Locations),
               is.data.table(SearchResult),
@@ -174,6 +175,8 @@ approx_dvr_matches <- function(xCaseNumber,
   } else {
     stopifnot(haskey(Data),
               identical(key(Data)[1:2], c("lat", "lon")))
+    
+    
     CaseNumber <- .subset2(Data, "CaseNumber")
     lat <- .subset2(Data, "lat")
     lon <- .subset2(Data, "lon")
@@ -182,6 +185,9 @@ approx_dvr_matches <- function(xCaseNumber,
               is.integer(CaseNumber),
               is.integer(VisitDateTime))
   }
+  stopifnot(is.double(Ion), length(Ion) == 1, !anyNA(Ion), 
+            Ion >= 0.5)
+  
   ans <- .Call("Capprox_dvr_matches",
                xCaseNumber,
                as.double(distance),
@@ -189,6 +195,7 @@ approx_dvr_matches <- function(xCaseNumber,
                CaseNumber,
                lat, lon,
                VisitDateTime, 
+               Ion,
                PACKAGE = "whichWithin")
   
   names(ans) <- c("orig", "dest")
@@ -197,5 +204,13 @@ approx_dvr_matches <- function(xCaseNumber,
   }
   ans
 }
+
+idvic <- function(lat, lon) {
+  melbourne <- 
+    and3s(lat %between% c(-37.5572, -38.24131),
+          lon %between% c(144.5762, 145.46332))
+  
+}
+
 
 

@@ -1,6 +1,9 @@
 #include "whichWithin.h"
 
-SEXP outer_1ds_R(const int * xp, int N, const int r0, const double ion) {
+SEXP outer_1ds_R(const int * xp,
+                 int N,
+                 const int r0,
+                 const double ion) {
   SEXP ans = PROTECT(allocVector(INTSXP, N));
   int * restrict ansp = INTEGER(ans);
   memset(ansp, 0, sizeof(int) * N);
@@ -25,7 +28,43 @@ SEXP outer_1ds_R(const int * xp, int N, const int r0, const double ion) {
   }
   UNPROTECT(1);
   return ans;
+}
+
+SEXP outer2List(SEXP x, SEXP Outer) {
+  checkEquiIntInt(x, Outer, "x", "Outer");
+  R_xlen_t N = xlength(x);
+  const int * xp = INTEGER(x);
+  const int * outer = INTEGER(Outer);
+  R_xlen_t oN = 0;
+  for (R_xlen_t i = 0; i < N; ++i) {
+    oN += outer[i];
+  }
+  bool err_message = true;
   
+  SEXP orig = PROTECT(allocVector(INTSXP, oN));
+  SEXP dest = PROTECT(allocVector(INTSXP, oN));
+  int * origp = INTEGER(orig);
+  int * destp = INTEGER(dest);
+  R_xlen_t k = 0;
+  for (R_xlen_t i = 0; i < N; ++i) {
+    R_xlen_t M = outer[i];
+    int oi = xp[i];
+    for (R_xlen_t j = i + 1; j < M; ++j) {
+      if (err_message && j >= oN) {
+        Rprintf("i = %lld, j = %lld, k = %lld, oN = %lld\n", i, j, k, oN);
+        err_message = false;
+      }
+      int xpj = xp[j];
+      origp[k] = oi;
+      destp[k] = xpj;
+      ++k;
+    }
+  }
+  SEXP ans = PROTECT(allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(ans, 0, orig);
+  SET_VECTOR_ELT(ans, 2, dest);
+  UNPROTECT(3);
+  return ans;
 }
 
 
@@ -133,7 +172,7 @@ SEXP Cwhich_within1d_R(SEXP x, SEXP R, SEXP Ion) {
   if (!isReal(Ion)) {
     error("Ion must be a double."); // # nocov
   }
-  R_xlen_t N = xlength(x);
+  int N = length(x);
   const int * xp = INTEGER(x);
   const double ion = asReal(Ion) < 1 ? 100 : asReal(Ion);
   
@@ -151,7 +190,60 @@ SEXP Cwhich_within1d_R(SEXP x, SEXP R, SEXP Ion) {
     
   }
   
-  return R_NilValue;
+  R_xlen_t oN = N * 100;
+  int * orig = calloc(oN, sizeof(int));
+  int * dest = calloc(oN, sizeof(int));
+  if (orig == NULL || dest == NULL) {
+    free(orig);
+    free(dest);
+    error("orig,dest could not be calloc'd"); // # nocov
+  }
+  
+  R_xlen_t k = 0;
+  for (int i = 0; i < N - 1; ++i) {
+    if (k + N >= oN) {
+      oN += (oN >> 3) + (oN >> 1);
+      int * new_orig = realloc(orig, sizeof(int) * oN);
+      if (new_orig == NULL) {
+        free(orig);
+        error("orig could not realloc'd");
+      }
+      orig = new_orig;
+      int * new_dest = realloc(dest, sizeof(int) * oN);
+      if (new_dest == NULL) {
+        free(orig);
+        free(dest);
+        error("dest could not realloc'd");
+      }
+      dest = new_dest;
+    }
+    int xpi = xp[i];
+    for (int j = i + 1; j < N; ++j) {
+      int xpj = xp[j];
+      int dpj = xpj > xpi ? xpj - xpi : xpi - xpj;
+      if (dpj <= r0) {
+        orig[k] = i + 1;
+        dest[k] = j + 1;
+        ++k;
+      }
+    }
+  }
+  SEXP ans = PROTECT(allocVector(VECSXP, 2));
+  SEXP ans0 = PROTECT(allocVector(INTSXP, k));
+  SEXP ans1 = PROTECT(allocVector(INTSXP, k));
+  int * ans0p = INTEGER(ans0);
+  int * ans1p = INTEGER(ans1);
+  for (R_xlen_t i = 0; i < k; ++i) {
+    ans0p[i] = orig[i];
+    ans1p[i] = dest[i];
+  }
+  
+  free(orig);
+  free(dest);
+  SET_VECTOR_ELT(ans, 0, ans0);
+  SET_VECTOR_ELT(ans, 1, ans1);
+  UNPROTECT(3);
+  return ans;
 }
 
 SEXP Cmerge2int(SEXP E, SEXP Ewidth, SEXP Time, SEXP Tradius) {
@@ -226,9 +318,14 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
                          SEXP Duration,
                          SEXP CaseNumber, 
                          SEXP Lat, SEXP Lon,
-                         SEXP VisitDateTime) {
+                         SEXP VisitDateTime,
+                         SEXP Ion) {
   const double r_d = asReal(Distance);
-  const double r_t = asReal(Duration);
+  const unsigned int r_t = asInteger(Duration);
+  if (r_t > 1048576) {
+    error("r_t(duration) > 1048576 this is an unlikely value for the number of seconds."); 
+  }
+  const unsigned int r2_t = r_t << 1;
   checkEquiIntInt(CaseNumber, VisitDateTime, "CaseNumber", "VisitDateTime");
   checkEquiRealReal(Lat, Lon, "Lat", "Lon");
   int N = length(CaseNumber);
@@ -243,8 +340,14 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
   const double * lat = REAL(Lat);
   const double * lon = REAL(Lon);
   
-  uint64_t oN = pow((double)N, 1.4);
-  oN += (oN >> 1) + (oN >> 3); // * ~1.62 
+  double ion = asReal(Ion);
+  if (ion <= 0) {
+    ion = N;
+  }
+  if (N > 100 && ion <= 100) {
+    ion *= N;
+  }
+  uint64_t oN = ion + 1;
   uint64_t k = 0;
   int * orig = calloc(oN, sizeof(int));
   int * dest = calloc(oN, sizeof(int));
@@ -256,9 +359,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
   const double rx = 0.000011352150 * r_d;
   const double ry = 0.000009007702 * r_d;
   
-  // uint64_t n_dupk = 0; // n_dupk number of k's extended when noticing duplicate lat,lons
-  
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N - 1; ++i) {
     int cno_i = cno[i];
     double lati = lat[i];
     double loni = lon[i];
@@ -292,6 +393,46 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
       dest = new_dest;
       // Rprintf("complete");
     }
+    unsigned int vdti = vdt[i];
+    unsigned int vdt_lhs = vdti - r_t;
+    
+    
+    bool location_match = false;
+    if (lat[i + 1] == lati &&
+        lon[i + 1] == loni) {
+      int j = i + 1;
+      // Same place; if we get a match, do not look at (expensive lat/lon operations)
+      unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
+      if (vdtj_rel_lhs <= r2_t) {
+        location_match = true;
+        orig[k] = i + 1;
+        dest[k] = j + 1;
+        ++k;
+        while (++j < N && lat[j] == lati && lon[j] == loni) {
+          unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
+          if (vdtj_rel_lhs <= r2_t) {
+            orig[k] = i + 1;
+            dest[k] = j + 1;
+            ++k;
+          }
+        }
+        continue; // # no need to check non-matching lat/lons
+      } else {
+        while (++j < N && lat[j] == lati && lon[j] == loni) {
+          unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
+          if (vdtj_rel_lhs <= r2_t) {
+            location_match = true;
+            orig[k] = i + 1;
+            dest[k] = j + 1;
+            ++k;
+          }
+        }
+        if (location_match) {
+          continue;
+        }
+      }
+    }
+    
     // TODO: 
     // Check whether the previous lat, lon is the same; if it is, we can copy
     // the previous entries
@@ -300,11 +441,11 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     for (int j = i + 1; j < N; ++j) {
       double latj = lat[j];
       double lonj = lon[j];
-      if (lat[j] > exlati) {
+      if (latj > exlati) {
         break;
       }
-      if (fabs(lon[j] - loni) <= rx) {
-        int vdti = vdt[i];
+      if (fabs(lonj - loni) <= rx) {
+        
         int vdtj = vdt[j];
         int dtij = (vdti < vdtj) ? (vdtj - vdti) : (vdti - vdtj);
         // if (i >= 4544830 && i <= 4544832) Rprintf("%d,", dtij);
@@ -314,7 +455,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
           
           // if (i >= 4544830 && i <= 4544832)Rprintf("(i = %d)k: %" PRIu64" | ", i, k);
           // if (i >= 4544830 && i <= 4544832)Rprintf("orig[k] = ");
-          int origk = orig[k];
+          
           // if (i >= 4544830 && i <= 4544832)Rprintf("%d <- %d ~ ", origk, i);
           orig[k] = i + 1;
           // if (i >= 4544830 && i <= 4544832) Rprintf("(j = %d)k: %" PRIu64" | ", j, k);

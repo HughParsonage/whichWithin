@@ -8,12 +8,13 @@
 */
 
 /* .Call calls */
-extern SEXP Capprox_dvr_matches(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP Capprox_dvr_matches(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cdist_sinusoidal(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cdo_is_within(SEXP, SEXP, SEXP);
 extern SEXP Cdo_minmax(SEXP, SEXP);
 extern SEXP Cengrid(SEXP, SEXP, SEXP);
 extern SEXP Cfirst_non_na_dbl(SEXP, SEXP);
+extern SEXP Cgroup_contiguous(SEXP, SEXP);
 extern SEXP Chaversine_dist(SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cis_sorted2(SEXP, SEXP, SEXP);
 extern SEXP Cmerge2int(SEXP, SEXP, SEXP, SEXP);
@@ -25,12 +26,13 @@ extern SEXP is_within_pixels(SEXP, SEXP, SEXP, SEXP);
 extern SEXP Z4P(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"Capprox_dvr_matches",  (DL_FUNC) &Capprox_dvr_matches,  7},
+    {"Capprox_dvr_matches",  (DL_FUNC) &Capprox_dvr_matches,  8},
     {"Cdist_sinusoidal",     (DL_FUNC) &Cdist_sinusoidal,     5},
     {"Cdo_is_within",        (DL_FUNC) &Cdo_is_within,        3},
     {"Cdo_minmax",           (DL_FUNC) &Cdo_minmax,           2},
     {"Cengrid",              (DL_FUNC) &Cengrid,              3},
     {"Cfirst_non_na_dbl",    (DL_FUNC) &Cfirst_non_na_dbl,    2},
+    {"Cgroup_contiguous",    (DL_FUNC) &Cgroup_contiguous,    2},
     {"Chaversine_dist",      (DL_FUNC) &Chaversine_dist,      4},
     {"Cis_sorted2",          (DL_FUNC) &Cis_sorted2,          3},
     {"Cmerge2int",           (DL_FUNC) &Cmerge2int,           4},

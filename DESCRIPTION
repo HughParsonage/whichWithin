@@ -26,4 +26,5 @@ Imports:
     checkmate,
     data.table,
     hutils,
+    hutilscpp,
     magrittr
