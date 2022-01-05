@@ -64,14 +64,9 @@ test_that("id column", {
 test_that("which_within2", {
   library(data.table)
   library(hutilscpp)
-  DT <- data.table(lat = -runif(101, 37, 37.1), 
-                   lon = runif(101, 144, 146),
-                   VisitDateTime = as.integer(runif(101, 10, 401)),
-                   CaseNumber = 1:101,
-                   key = "lat,lon")
   DT <- data.table(lat = seq(-35, -34, length.out = 101),
                    lon = 150,
-                   VisitDateTime = as.integer(runif(101, 10, 401)),
+                   VisitDateTime = rep_len(0:4, 101),
                    CaseNumber = 1:101,
                    key = "lat,lon")
   DT[, i := .I]
@@ -89,11 +84,17 @@ test_that("which_within2", {
                                              Data = DT, time_column = "VisitDateTime", x_column = "CaseNumber")
   expect_equal(n, nrow(wj))
   
-  n <- Cj[, sum_and3s(dist_y <= (0.000009007702 * 10000), dist_x <= 0.000011352150 * 10000, dura <= 2)]
+  n <- Cj[, hutilscpp::sum_and3s(dist_y <= (0.000009007702 * 10000), dist_x <= 0.000011352150 * 10000, dura <= 2)]
   
   wj <- whichWithin:::which_within_dist_dura(1:101, distance = "10000m", duration = 2,
                                              Data = DT, time_column = "VisitDateTime", x_column = "CaseNumber")
   expect_equal(n, nrow(wj))
+  
+  wj[, c("dist", "dura") := od2dd(DT$lat, DT$lon, DT$VisitDateTime, orig, dest)]
+  for (i in seq_len(nrow(wj))) {
+    expect_lte(wj$dist[i], 10e3L + 10L) # slightl error
+    expect_lte(wj$dura[i], 2L)
+  }
 })
 
 

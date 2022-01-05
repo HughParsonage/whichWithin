@@ -30,7 +30,12 @@ vectors for filtering and determining time-matching.}
 
 \item{duration}{The maximum difference in time in seconds.}
 
-\item{option}{An integer. Only \code{option = 0L} is allowed currently.}
+\item{option}{An integer. Only \code{option = 0L} is allowed currently.
+\describe{
+\item{0}{Restricts values of \code{orig}; any exact matches mean approximate matches are ignored.}
+\item{1}{Same as \code{0} but \code{dest} is restricted too.}
+\item{2}{Exact matches do not preclude approximate matches}
+}}
 
 \item{Ion}{Used to set the expected number of rows required in the output. Memory is allocated
 in large chunks within this function. If you find yourself running out of memory

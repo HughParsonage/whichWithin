@@ -318,26 +318,29 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
                          SEXP Duration,
                          SEXP CaseNumber, 
                          SEXP Lat, SEXP Lon,
-                         SEXP VisitDateTime,
+                         SEXP Time,
                          SEXP Option,
                          SEXP Ion) {
+  const unsigned int opt = asInteger(Option);
+  // 
+  
   const double r_d = asReal(Distance);
   const unsigned int r_t = asInteger(Duration);
   if (r_t > 1048576) {
     error("r_t(duration) > 1048576 this is an unlikely value for the number of seconds."); 
   }
   const unsigned int r2_t = r_t << 1;
-  checkEquiIntInt(CaseNumber, VisitDateTime, "CaseNumber", "VisitDateTime");
+  checkEquiIntInt(CaseNumber, Time, "Data_x", "Time");
   checkEquiRealReal(Lat, Lon, "Lat", "Lon");
   int N = length(CaseNumber);
   if (xlength(Lat) != N) {
-    error("xlength(Lat) = %lld, yet xlength(CaseNumber) = %lld. Lengths must be equal.", 
+    error("xlength(Lat) = %lld, yet xlength(Data_x) = %lld. Lengths must be equal.", 
           xlength(Lat), N);
   }
   int n_xCaseNumber = length(xCaseNumber);
   int * xp = INTEGER(xCaseNumber);  // # the case numbers requested
   const int * cno = INTEGER(CaseNumber);
-  const int * vdt = INTEGER(VisitDateTime);
+  const int * vdt = INTEGER(Time);
   const double * lat = REAL(Lat);
   const double * lon = REAL(Lon);
   
@@ -360,12 +363,22 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
   const double rx = 0.000011352150 * r_d;
   const double ry = 0.000009007702 * r_d;
   
+  unsigned char * skip_x = calloc(N, sizeof(char));
+  if (skip_x == NULL) {
+    free(orig);
+    free(dest);
+    free(skip_x);
+    error("skip_x could not be calloc");
+  }
+  
+  for (int i = 0; i < N; ++i) {
+    skip_x[i] = !binary_in(cno[i], xp, n_xCaseNumber);
+  }
+  
   for (int i = 0; i < N - 1; ++i) {
-    int cno_i = cno[i];
     double lati = lat[i];
     double loni = lon[i];
-    if (!binary_in(cno_i, xp, n_xCaseNumber) ||
-        ISNAN(lati) || ISNAN(loni)) {
+    if (skip_x[i] || ISNAN(lati) || ISNAN(loni)) {
       // ignore CaseNumbers
       continue;
     }
@@ -377,6 +390,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
       // Rprintf("(i = %d)orig realloc'd: %" PRIu64" bytes\n", i, oN);
       int * new_orig = (int * )realloc(orig, oN * sizeof(int));
       if (new_orig == NULL) {
+        free(skip_x);
         free(orig);
         free(dest);
         // Rprintf("(i = %d)orig could not be realloc'd: %" PRIu64" bytes", i, oN);
@@ -386,6 +400,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
       int * new_dest = (int *)realloc(dest, oN * sizeof(int));
       // Rprintf("(i = %d)dest realloc'd: %" PRIu64" bytes\n", i, oN);
       if (new_dest == NULL) {
+        free(skip_x);
         free(orig);
         free(dest);
         // Rprintf("(i = %d)orig could not be realloc'd: %" PRIu64" bytes", i, oN);
@@ -398,8 +413,10 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     unsigned int vdt_lhs = vdti - r_t;
     
     bool location_match = false;
-    if (lat[i + 1] == lati &&
-        lon[i + 1] == loni) {
+    if (opt <= 1 &&
+        lat[i + 1] == lati &&
+        lon[i + 1] == loni &&
+        (opt != 1 || skip_x[i + 1])) {
       int j = i + 1;
       // Same place; if we get a match, do not look at (expensive lat/lon operations)
       unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
@@ -409,6 +426,9 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
         dest[k] = j + 1;
         ++k;
         while (++j < N && lat[j] == lati && lon[j] == loni) {
+          if (opt == 1 && skip_x[j]) {
+            continue;
+          }
           unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
           if (vdtj_rel_lhs <= r2_t) {
             orig[k] = i + 1;
@@ -419,6 +439,9 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
         continue; // # no need to check non-matching lat/lons
       } else {
         while (++j < N && lat[j] == lati && lon[j] == loni) {
+          if (opt == 1 && skip_x[j]) {
+            continue;
+          }
           unsigned int vdtj_rel_lhs = ((unsigned int)vdt[j]) - vdt_lhs;
           if (vdtj_rel_lhs <= r2_t) {
             location_match = true;
@@ -449,15 +472,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
         int dtij = (vdti < vdtj) ? (vdtj - vdti) : (vdti - vdtj);
         // if (i >= 4544830 && i <= 4544832) Rprintf("%d,", dtij);
         if (dtij <= r_t) {
-          // if (i >= 4544830 && i <= 4544832) Rprintf("%d\n", j);
-          // if (i >= 4544830 && i <= 4544832) Rprintf(".");
-          
-          // if (i >= 4544830 && i <= 4544832)Rprintf("(i = %d)k: %" PRIu64" | ", i, k);
-          // if (i >= 4544830 && i <= 4544832)Rprintf("orig[k] = ");
-          
-          // if (i >= 4544830 && i <= 4544832)Rprintf("%d <- %d ~ ", origk, i);
           orig[k] = i + 1;
-          // if (i >= 4544830 && i <= 4544832) Rprintf("(j = %d)k: %" PRIu64" | ", j, k);
           dest[k] = j + 1;
           ++k;
         }
@@ -466,7 +481,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     
     
   }
-  
+  free(skip_x);
   SEXP ans = PROTECT(allocVector(VECSXP, 2));
   SEXP ans0 = PROTECT(allocVector(INTSXP, k));
   SEXP ans1 = PROTECT(allocVector(INTSXP, k));
@@ -484,6 +499,73 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
   UNPROTECT(3);
   return ans;
   
+}
+
+SEXP od2dd(SEXP Lat, SEXP Lon,
+           SEXP Time,
+           SEXP Orig, SEXP Dest) {
+  unsigned int M = length(Lat) + 1u; // only used in 1-index case
+  R_xlen_t N = xlength(Orig);
+  const double * lat = REAL(Lat);
+  const double * lon = REAL(Lon);
+  const int * tp = INTEGER(Time);
+  const int * origp = INTEGER(Orig);
+  const int * destp = INTEGER(Dest);
+  
+  SEXP Dist = PROTECT(allocVector(INTSXP, N));
+  SEXP Dura = PROTECT(allocVector(INTSXP, N));
+  int * restrict distp = INTEGER(Dist);
+  int * restrict durap = INTEGER(Dura);
+  
+  for (R_xlen_t k = 0; k < N; ++k) {
+    unsigned int i = origp[k];
+    unsigned int j = destp[k];
+    if (i >= M || j >= M) { 
+      // in particular, NA values
+      distp[k] = NA_INTEGER;
+      durap[k] = NA_INTEGER;
+      continue;
+    }
+    --i, --j; // 0-indexing
+    distp[k] = 1000 * haversine_dist(lat[i], lon[i], lat[j], lon[j]);
+    durap[k] = (tp[i] > tp[j]) ? (tp[i] - tp[j]) : (tp[j] - tp[i]);
+  }
+  SEXP ans = PROTECT(allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(ans, 0, Dist);
+  SET_VECTOR_ELT(ans, 1, Dura);
+  UNPROTECT(3);
+  return ans;
+}
+
+SEXP C_od2dd(SEXP Lat, SEXP Lon,
+             SEXP Time,
+             SEXP Orig, SEXP Dest,
+             SEXP Option) {
+  
+  // Returns the actual distance between the origin and destination
+  // points.
+  const int opt = asInteger(Option);
+  // opt = 0, both distance and time
+  // opt = 1, just distance in metres
+  // opt = 2, just time in seconds
+  
+  checkEquiIntInt(Orig, Dest, "Orig", "Dest");
+  checkEquiRealReal(Lat, Lon, "lat", "lon");
+  int N = length(Lat);
+  if (xlength(Time) != N) {
+    error("xlength(Time) = %lld, yet xlength(Lat) = %d. Lengths must be equal.", 
+          xlength(Time), N);
+  }
+  // switch(opt) {
+  // case 0:
+    return od2dd(Lat, Lon, Time, Orig, Dest);
+  // case 1:
+  //   return od2di(Lat, Lon, Orig, Dest);
+  // case 2:
+  //   return od2du(Time, Orig, Dest);
+  // }
+  warning("Option not 0, 1, 2");
+  return R_NilValue;
 }
 
 
