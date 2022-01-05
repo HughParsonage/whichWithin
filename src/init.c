@@ -8,6 +8,7 @@
 */
 
 /* .Call calls */
+extern SEXP C_od2dd(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Capprox_dvr_matches(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cdist_sinusoidal(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cdo_is_within(SEXP, SEXP, SEXP);
@@ -26,6 +27,7 @@ extern SEXP is_within_pixels(SEXP, SEXP, SEXP, SEXP);
 extern SEXP Z4P(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"C_od2dd",              (DL_FUNC) &C_od2dd,              6},
     {"Capprox_dvr_matches",  (DL_FUNC) &Capprox_dvr_matches,  9},
     {"Cdist_sinusoidal",     (DL_FUNC) &Cdist_sinusoidal,     5},
     {"Cdo_is_within",        (DL_FUNC) &Cdo_is_within,        3},
