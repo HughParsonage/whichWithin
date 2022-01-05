@@ -46,7 +46,7 @@ the indices of \code{lat,lon}
 }
 \description{
 Used to approiximately but relatively quickly
-identify among a collection of coordinates which are within
+identify among a collection of coordinates which pairs are within
 a certain radius.
 }
 \examples{

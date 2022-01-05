@@ -13,7 +13,7 @@ group_contiguous <- function(x, r) {
   stopifnot(is.integer(x), 
             is.numeric(r), length(r) == 1, !is.na(r), r >= 0)
   if (is.double(r)) {
-    r <- as.integer(ceil(r))
+    r <- as.integer(ceiling(r))
   }
   rx <- NULL
   if (isntSorted(x, asc = TRUE)) {
