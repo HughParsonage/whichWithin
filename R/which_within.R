@@ -1,6 +1,6 @@
 #' Which points are within a radius of each other?
 #' @description Used to approiximately but relatively quickly
-#' identify among a collection of coordinates which are within
+#' identify among a collection of coordinates which pairs are within
 #' a certain radius. 
 #' 
 #' 
@@ -137,12 +137,7 @@ which_within1d <- function(x, r, ion = 100) {
 
 
 
-idvic <- function(lat, lon) {
-  melbourne <- 
-    and3s(lat %between% c(-37.5572, -38.24131),
-          lon %between% c(144.5762, 145.46332))
-  
-}
+
 
 
 

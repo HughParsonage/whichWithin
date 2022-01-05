@@ -16,6 +16,7 @@ Suggests:
     bench,
     fst,
     geosphere,
+    lubridate,
     mapproj,
     memuse,
     testthat,
