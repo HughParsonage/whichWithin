@@ -40,7 +40,6 @@ which_within_dist_dura <- function(x,
                                    duration = 3600,
                                    option = 0L,
                                    Ion = getOption("whichWithin.Ion", 10)) {
-  stopifnot(identical(option, 0L))  # tempo
   
   stopifnot(is.data.table(Data), 
             length(time_column) == 1L,
@@ -50,6 +49,7 @@ which_within_dist_dura <- function(x,
             hasName(Data, x_column),
             is.integer(.subset2(Data, x_column)))
   
+  x <- unique(x)
   if (!isntSorted(x, asc = TRUE)) {
     x <- sort(x)
   }
@@ -62,18 +62,17 @@ which_within_dist_dura <- function(x,
   distance <- units2km(distance) * 1000
   
   Data_x <- .subset2(Data, x_column)
-  lat <- .subset2(Data, "lat")
-  lon <- .subset2(Data, "lon")
+  lat <- .subset2(Data, maybe_latloncols[1])
+  lon <- .subset2(Data, maybe_latloncols[2])
   Data_time <- .subset2(Data, time_column)
   stopifnot(is.double(lat), is.double(lon))
   stopifnot(is.double(Ion), length(Ion) == 1, !anyNA(Ion), 
             Ion >= 0.5)
   
   ans <- .Call("Capprox_dvr_matches",
-               x,
+               Data_x %notin% x,
                as.double(distance),
                as.double(duration),
-               Data_x,
                lat, lon,
                Data_time, 
                option,
@@ -90,5 +89,31 @@ which_within_dist_dura <- function(x,
 od2dd <- function(lat, lon, time, orig, dest, option = 0L) {
   .Call("C_od2dd", lat, lon, time, orig, dest, option, PACKAGE = "whichWithin")
 }
+
+which_within_dist_dura_naive <- function(x, 
+                                         Data,
+                                         x_column,
+                                         time_column, 
+                                         distance = "100m", 
+                                         duration = 3600) {
+  distance <- units2km(distance)
+  i <- j <- time_x <- time_y <-
+    lat_x <- lat_y <-
+    lon_x <- lon_y <- 
+    dist <- dura <- NULL
+  DT <- CJ(i = 1:nrow(Data),
+           j = 1:nrow(Data))[i < j]
+  DT[, c("time_x", "time_y") := list(.subset2(Data, time_column)[i],
+                                     .subset2(Data, time_column)[j])]
+  DT[, c("lat_x", "lat_y") := list(.subset2(Data, "lat")[i],
+                                   .subset2(Data, "lat")[j])]
+  DT[, c("lon_x", "lon_y") := list(.subset2(Data, "lon")[i],
+                                   .subset2(Data, "lon")[j])]
+  DT[, dist := haversine_distance(lat_x, lon_x, lat_y, lon_y)]
+  DT[, dura := abs(time_x - time_y)]
+  DT[as.logical(and3s(dist < distance, dura < duration))]
+}
+
+
 
 

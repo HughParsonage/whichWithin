@@ -97,5 +97,20 @@ test_that("which_within2", {
   }
 })
 
+test_that("which_within_dist_dura", {
+  library(data.table)
+  library(hutilscpp)
+  DT <- data.table(lat = c(-37, -37, -37, -36.5, -36.5, -36.499), 
+                   lon = c(150, 150, 150, 150.1, 150.2, 150.199),
+                   tim = integer(6),
+                   idz = 1:6,
+                   key = "lat,lon")
+  
+  A <- which_within_dist_dura(1:6, DT, x_column = "idz", time_column = "tim", distance = "1km")
+  B <- which_within_dist_dura_naive(1:6, DT, x_column = "idz", time_column = "tim", distance = "1km")
+  expect_equal(nrow(A), nrow(B))
+  
+})
+
 
 

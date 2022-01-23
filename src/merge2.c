@@ -313,16 +313,17 @@ bool binary_in(int key, int * xp, int N) {
   return false;
 }
 
-SEXP Capprox_dvr_matches(SEXP xCaseNumber,
+SEXP Capprox_dvr_matches(SEXP Skip,
                          SEXP Distance,
                          SEXP Duration,
-                         SEXP CaseNumber, 
                          SEXP Lat, SEXP Lon,
                          SEXP Time,
                          SEXP Option,
                          SEXP Ion) {
+  if (!isLogical(Skip) || xlength(Skip) != xlength(Time)) {
+    error("(Internal error): Skip was type '%s' but must be logical.", type2char(TYPEOF(Skip))); // # nocov
+  }
   const unsigned int opt = asInteger(Option);
-  // 
   
   const double r_d = asReal(Distance);
   const unsigned int r_t = asInteger(Duration);
@@ -330,16 +331,12 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     error("r_t(duration) > 1048576 this is an unlikely value for the number of seconds."); 
   }
   const unsigned int r2_t = r_t << 1;
-  checkEquiIntInt(CaseNumber, Time, "Data_x", "Time");
   checkEquiRealReal(Lat, Lon, "Lat", "Lon");
-  int N = length(CaseNumber);
+  int N = length(Skip);
   if (xlength(Lat) != N) {
     error("xlength(Lat) = %lld, yet xlength(Data_x) = %lld. Lengths must be equal.", 
           xlength(Lat), N);
   }
-  int n_xCaseNumber = length(xCaseNumber);
-  int * xp = INTEGER(xCaseNumber);  // # the case numbers requested
-  const int * cno = INTEGER(CaseNumber);
   const int * vdt = INTEGER(Time);
   const double * lat = REAL(Lat);
   const double * lon = REAL(Lon);
@@ -363,17 +360,7 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
   const double rx = 0.000011352150 * r_d;
   const double ry = 0.000009007702 * r_d;
   
-  unsigned char * skip_x = calloc(N, sizeof(char));
-  if (skip_x == NULL) {
-    free(orig);
-    free(dest);
-    free(skip_x);
-    error("skip_x could not be calloc");
-  }
-  
-  for (int i = 0; i < N; ++i) {
-    skip_x[i] = !binary_in(cno[i], xp, n_xCaseNumber);
-  }
+  const int * skip_x = LOGICAL(Skip);
   
   for (int i = 0; i < N - 1; ++i) {
     double lati = lat[i];
@@ -383,27 +370,21 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
       continue;
     }
     
-    // if (i >= 4544830 && i <= 4544832) Rprintf("%d", i);
+    
     if (k + N >= (oN - 1)) {
-      // if (k <= UINT_MAX) Rprintf("\n===> k = %u\n", (unsigned int)k);
-      oN += (oN >> 1) + (oN >> 3); // * ~1.62 
-      // Rprintf("(i = %d)orig realloc'd: %" PRIu64" bytes\n", i, oN);
+      oN += (oN >> 1) + (oN >> 3); // * ~1.62
       int * new_orig = (int * )realloc(orig, oN * sizeof(int));
       if (new_orig == NULL) {
-        free(skip_x);
         free(orig);
         free(dest);
-        // Rprintf("(i = %d)orig could not be realloc'd: %" PRIu64" bytes", i, oN);
         error("(i = %d)orig could not be realloc'd: %" PRIu64" bytes", i, oN); // # nocov
       }
       orig = new_orig;
       int * new_dest = (int *)realloc(dest, oN * sizeof(int));
-      // Rprintf("(i = %d)dest realloc'd: %" PRIu64" bytes\n", i, oN);
+      
       if (new_dest == NULL) {
-        free(skip_x);
         free(orig);
         free(dest);
-        // Rprintf("(i = %d)orig could not be realloc'd: %" PRIu64" bytes", i, oN);
         error("(i = %d)dest could not be realloc'd: %" PRIu64" bytes", i, oN); // # nocov
       }
       dest = new_dest;
@@ -481,7 +462,6 @@ SEXP Capprox_dvr_matches(SEXP xCaseNumber,
     
     
   }
-  free(skip_x);
   SEXP ans = PROTECT(allocVector(VECSXP, 2));
   SEXP ans0 = PROTECT(allocVector(INTSXP, k));
   SEXP ans1 = PROTECT(allocVector(INTSXP, k));
