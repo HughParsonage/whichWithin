@@ -1,6 +1,11 @@
+# whichWithin 0.8.0
+
+* New functions:
+  - `which_within_x1d` for 'rolling' matches (one exact matching column, one partially)
+
 # whichWithin 0.7.0
 
-* `which_within_dist_dura` now handles unique
+* `which_within_dist_dura` now handles unique values more gracefully
 
 
 # whichWithin 0.6.0

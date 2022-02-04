@@ -2,6 +2,7 @@
 #' 
 #' @import data.table
 #' @importFrom checkmate vname
+#' @importFrom fastmatch fmatch
 #' @importFrom hutils %notin%
 #' @importFrom hutils AND
 #' @importFrom hutils OR

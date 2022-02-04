@@ -37,6 +37,7 @@ void verify_sorted_int(R_xlen_t N, const int * xp, const char * nx);
 
 #define INGRID_SORTED2_ERR_NO 11
 #define DO_WHICH_WITHIN_SORTED2_ERR_NO 12
+#define WHICH_WITHIN_X1D_SORTED2 13
 
 // const double EARTH_RADIUS_KM = 6378.137;
 #define EARTH_RADIUS_KM 6371.0

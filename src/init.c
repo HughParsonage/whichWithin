@@ -21,6 +21,7 @@ extern SEXP Cis_sorted2(SEXP, SEXP, SEXP);
 extern SEXP Cmerge2int(SEXP, SEXP, SEXP, SEXP);
 extern SEXP CSinusoidal(SEXP, SEXP, SEXP);
 extern SEXP Ctest_sum_identities(SEXP, SEXP, SEXP);
+extern SEXP Cwhich_within_x1d(SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cwhich_within1d_R(SEXP, SEXP, SEXP);
 extern SEXP do_which_within(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP is_within_pixels(SEXP, SEXP, SEXP, SEXP);
@@ -40,6 +41,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Cmerge2int",           (DL_FUNC) &Cmerge2int,           4},
     {"CSinusoidal",          (DL_FUNC) &CSinusoidal,          3},
     {"Ctest_sum_identities", (DL_FUNC) &Ctest_sum_identities, 3},
+    {"Cwhich_within_x1d",    (DL_FUNC) &Cwhich_within_x1d,    4},
     {"Cwhich_within1d_R",    (DL_FUNC) &Cwhich_within1d_R,    3},
     {"do_which_within",      (DL_FUNC) &do_which_within,      5},
     {"is_within_pixels",     (DL_FUNC) &is_within_pixels,     4},

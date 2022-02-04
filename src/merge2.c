@@ -548,7 +548,105 @@ SEXP C_od2dd(SEXP Lat, SEXP Lon,
   return R_NilValue;
 }
 
+// Exact matching with 1 dimensional ball
+SEXP Cwhich_within_x1d_ii(const int * xp, const int * yp, int N, int64_t r, const int opt) {
+  // Determine size required
+  R_xlen_t oN_req = 0;
+  R_xlen_t oN = (R_xlen_t)N + (N >> 3) + (N >> 1);
+  if (opt == 1 || opt != 1) {
+    for (int i = 0; i < N - 1; ++i) {
+      int xpi = xp[i];
+      int ypi = yp[i];
+      if (ypi + r > INT_MAX) {
+        continue;
+      }
+      int max_ypi = ypi + r;
+      
+      for (int j = i + 1; j < N; ++j) {
+        if (xp[j] != xpi) {
+          break;
+        }
+        if (yp[j] > max_ypi) {
+          break;
+        }
+        oN_req += 1;
+      }
+    }
+    oN = oN_req;
+  }
+  
 
+  int * orig = malloc(sizeof(int) * oN);
+  if (orig == NULL) {
+    error("orig could not be initially malloc'd");
+  }
+  int * dest = malloc(sizeof(int) * oN);
+  if (dest == NULL) {
+    error("dest could not be initially malloc'd");
+  }
+  R_xlen_t k = 0;
+  for (int i = 0; i < N - 1; ++i) {
+    int xpi = xp[i];
+    int ypi = yp[i];
+    if (ypi + r > INT_MAX) {
+      continue;
+    }
+    int max_ypi = ypi + r;
+    for (int j = i + 1; j < N; ++j) {
+      if (k >= oN) {
+        break;
+      }
+      if (xp[j] != xpi) {
+        break;
+      }
+      if (yp[j] > max_ypi) {
+        break;
+      }
+      orig[k] = i + 1;
+      dest[k] = j + 1;
+      ++k;
+    }
+    
+  }
+  SEXP ans1 = PROTECT(allocVector(INTSXP, oN));
+  SEXP ans2 = PROTECT(allocVector(INTSXP, oN));
+  int * restrict ans1p = INTEGER(ans1);
+  int * restrict ans2p = INTEGER(ans2);
+  SEXP ans = PROTECT(allocVector(VECSXP, 2));
+  for (R_xlen_t k = 0; k < oN; ++k) {
+    ans1p[k] = orig[k];
+    ans2p[k] = dest[k];
+  }
+  free(orig);
+  free(dest);
+  SET_VECTOR_ELT(ans, 0, ans1);
+  SET_VECTOR_ELT(ans, 1, ans2);
+  UNPROTECT(3);
+  return ans;
+}
+
+SEXP Cwhich_within_x1d(SEXP x, SEXP y, SEXP R, SEXP Option) {
+  const int opt = asInteger(Option);
+  verify_sorted2(xlength(x), x, y, WHICH_WITHIN_X1D_SORTED2);
+  int64_t r = 0;
+  if (isInteger(R)) {
+    r = asInteger(R);
+  } else if (isReal(R)) {
+    r = asReal(R) < UINT_MAX ? asReal(R) : UINT_MAX;
+  }
+  if (xlength(x) >= INT_MAX) {
+    error("xlength(x) >= INT_MAX");
+  }
+  
+  switch(TYPEOF(x)) {
+  case INTSXP:
+    switch(TYPEOF(y)) {
+    case INTSXP:
+      return Cwhich_within_x1d_ii(INTEGER(x), INTEGER(y), length(x), r, opt);
+    }
+  }
+  return R_NilValue;
+}
 
 
 
